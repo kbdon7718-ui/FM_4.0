@@ -69,9 +69,23 @@ export default function FleetMap({ user }) {
         }
       },
       (err) => {
-        console.error(err);
-        setError('Please allow location access');
-      },
+  console.error(err);
+
+  switch (err.code) {
+    case err.PERMISSION_DENIED:
+      setError('Location permission denied');
+      break;
+    case err.POSITION_UNAVAILABLE:
+      setError('Location unavailable. Check GPS or network');
+      break;
+    case err.TIMEOUT:
+      setError('Location request timed out');
+      break;
+    default:
+      setError('Unable to fetch location');
+  }
+},
+
       {
         enableHighAccuracy: true,
         maximumAge: 0,
