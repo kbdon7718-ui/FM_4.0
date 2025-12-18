@@ -21,7 +21,15 @@ export function LoginPage({ onLogin }) {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [useDemo, setUseDemo] = useState(false);
+  const [useDemo, setUseDemo] = useState(true); // default demo ON
+
+  /* ===============================
+     DIRECT LOGIN (NO CREDENTIALS)
+     =============================== */
+  const directLogin = (role) => {
+    // Temporary direct access (DEV ONLY)
+    onLogin(role, { role });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -40,7 +48,8 @@ export function LoginPage({ onLogin }) {
       return;
     }
 
-    /* ---------------- REAL LOGIN ---------------- */
+    /* ---------------- REAL LOGIN (COMMENTED FOR NOW) ---------------- */
+    /*
     try {
       const response = await apiLogin(email, password);
 
@@ -48,18 +57,15 @@ export function LoginPage({ onLogin }) {
         throw new Error('Invalid login response');
       }
 
-      // Pass role + full user object upward
       onLogin(response.user.role, response.user);
     } catch (err) {
       setError(err.message || 'Login failed. Please try again.');
     } finally {
       setLoading(false);
     }
-  };
+    */
 
-  const fillDemo = (role) => {
-    setEmail(`${role.toLowerCase()}@fleet.com`);
-    setPassword('password123');
+    setLoading(false);
   };
 
   return (
@@ -77,7 +83,38 @@ export function LoginPage({ onLogin }) {
           </CardDescription>
         </CardHeader>
 
-        <CardContent>
+        <CardContent className="space-y-6">
+
+          {/* ===============================
+              DIRECT LOGIN BUTTONS
+              =============================== */}
+          <div className="space-y-3">
+            <Button
+              className="w-full bg-emerald-600 hover:bg-emerald-700"
+              onClick={() => directLogin('OWNER')}
+            >
+              Login as Owner
+            </Button>
+
+            <Button
+              className="w-full bg-blue-600 hover:bg-blue-700"
+              onClick={() => directLogin('SUPERVISOR')}
+            >
+              Login as Supervisor
+            </Button>
+
+            <Button
+              className="w-full bg-purple-600 hover:bg-purple-700"
+              onClick={() => directLogin('FLEET')}
+            >
+              Login as Fleet
+            </Button>
+          </div>
+
+          {/* ===============================
+              EMAIL / PASSWORD (COMMENTED)
+              =============================== */}
+          {/*
           <form onSubmit={handleSubmit} className="space-y-5">
             {error && (
               <div className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
@@ -93,7 +130,6 @@ export function LoginPage({ onLogin }) {
                 placeholder="you@company.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                required
               />
             </div>
 
@@ -104,66 +140,23 @@ export function LoginPage({ onLogin }) {
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                required
               />
             </div>
 
             <Button
               type="submit"
-              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+              className="w-full bg-emerald-600"
               disabled={loading}
             >
-              {loading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Signing in...
-                </>
-              ) : (
-                'Sign In'
-              )}
+              {loading ? 'Signing in...' : 'Sign In'}
             </Button>
-
-            {/* DEMO MODE */}
-            <div className="border-t border-slate-200 pt-4 space-y-3">
-              <div className="flex items-center justify-between text-xs text-slate-500">
-                <span>Demo access (no backend)</span>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={useDemo}
-                    onChange={(e) => setUseDemo(e.target.checked)}
-                  />
-                  Enable
-                </label>
-              </div>
-
-              {useDemo && (
-                <div className="grid grid-cols-3 gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => fillDemo('OWNER')}
-                  >
-                    Owner
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => fillDemo('SUPERVISOR')}
-                  >
-                    Supervisor
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => fillDemo('FLEET')}
-                  >
-                    Fleet
-                  </Button>
-                </div>
-              )}
-            </div>
           </form>
+          */}
+
+          <p className="text-xs text-center text-slate-500">
+            ⚠ Direct login enabled for development only
+          </p>
+
         </CardContent>
       </Card>
     </div>

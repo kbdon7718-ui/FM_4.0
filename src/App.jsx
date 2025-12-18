@@ -18,36 +18,22 @@ import { Settings } from './owner/Settings.jsx';
    SUPERVISOR
 ========================= */
 import { SupervisorLayout } from './supervisor/SupervisorLayout.jsx';
-import SupervisorDashboard from './supervisor/SupervisorDashboard.jsx';
-import { FuelEntry } from './supervisor/FuelEntry.jsx';
-import { LiveTracking } from './supervisor/LiveTracking.jsx';
-import { ComplaintsPanel } from './supervisor/ComplaintsPanel.jsx';
-import { GeofencingPage } from './supervisor/GeofencingPage.jsx';
-import { VehicleTracking } from './supervisor/VehicleTracking.jsx';
 
 /* =========================
    FLEET
 ========================= */
-import FleetLayout from './Fleet/FleetLayout.jsx';
 import FleetDashboard from './Fleet/FleetDashboard.jsx';
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userRole, setUserRole] = useState(null);
   const [user, setUser] = useState(null);
-
-  /* page state is ROLE-SCOPED */
   const [currentPage, setCurrentPage] = useState(null);
 
-  /* =========================
-     AUTH HANDLERS
-  ========================= */
   const handleLogin = (role, userData = null) => {
     setUserRole(role);
     setUser(userData);
     setIsLoggedIn(true);
-
-    // default landing page per role
     setCurrentPage('dashboard');
   };
 
@@ -62,15 +48,12 @@ export default function App() {
     setCurrentPage(page);
   };
 
-  /* =========================
-     LOGIN
-  ========================= */
   if (!isLoggedIn) {
     return <LoginPage onLogin={handleLogin} />;
   }
 
   /* =========================
-     OWNER PORTAL
+     OWNER PORTAL (UNCHANGED)
   ========================= */
   if (userRole === 'OWNER') {
     let page = <OwnerDashboard />;
@@ -120,51 +103,20 @@ export default function App() {
      SUPERVISOR PORTAL
   ========================= */
   if (userRole === 'SUPERVISOR') {
-    let page = <SupervisorDashboard />;
-
-    switch (currentPage) {
-      case 'dashboard':
-        page = <SupervisorDashboard />;
-        break;
-      case 'fuel-entry':
-        page = <FuelEntry />;
-        break;
-      case 'live-tracking':
-        page = <LiveTracking />;
-        break;
-      case 'vehicle-tracking':
-        page = <VehicleTracking />;
-        break;
-      case 'complaints':
-        page = <ComplaintsPanel />;
-        break;
-      case 'geofencing':
-        page = <GeofencingPage />;
-        break;
-      default:
-        page = <SupervisorDashboard />;
-    }
-
     return (
       <SupervisorLayout
-        currentPage={currentPage}
-        onNavigate={handleNavigate}
         onLogout={handleLogout}
         user={user}
-      >
-        {page}
-      </SupervisorLayout>
+      />
     );
   }
 
   /* =========================
      FLEET PORTAL
   ========================= */
-  
   if (userRole === 'FLEET') {
-  return <FleetDashboard onLogout={handleLogout} />;
-}
-
+    return <FleetDashboard onLogout={handleLogout} />;
+  }
 
   return null;
 }

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   LayoutDashboard,
   Truck,
@@ -8,19 +9,28 @@ import {
   LogOut,
   User,
 } from 'lucide-react';
+
 import { Button } from '../components/ui/button.jsx';
 
+/* =========================
+   SUPERVISOR PAGES
+========================= */
+import SupervisorDashboard from './SupervisorDashboard.jsx';
+import { FuelEntry } from './FuelEntry.jsx';
+import { LiveTracking } from './LiveTracking.jsx';
+import { VehicleTracking } from './VehicleTracking.jsx';
+import { ComplaintsPanel } from './ComplaintsPanel.jsx';
+import { GeofencingPage } from './GeofencingPage.jsx';
+
 /**
- * SupervisorLayout
- * Operational layout for supervisors
- * Focus: live operations, quick actions
+ * SupervisorLayout (TOP HEADER)
+ * - Header navigation
+ * - Page state
+ * - Page rendering
  */
-export function SupervisorLayout({
-  children,
-  onLogout,
-  onNavigate,
-  currentPage,
-}) {
+export function SupervisorLayout({ onLogout, user }) {
+  const [currentPage, setCurrentPage] = useState('dashboard');
+
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'fuel-entry', label: 'Fuel Entry', icon: Droplet },
@@ -30,33 +40,46 @@ export function SupervisorLayout({
     { id: 'geofencing', label: 'Geofencing', icon: MapPin },
   ];
 
+  const renderPage = () => {
+    switch (currentPage) {
+      case 'dashboard':
+        return <SupervisorDashboard />;
+      case 'fuel-entry':
+        return <FuelEntry />;
+      case 'live-tracking':
+        return <LiveTracking />;
+      case 'vehicle-tracking':
+        return <VehicleTracking />;
+      case 'complaints':
+        return <ComplaintsPanel />;
+      case 'geofencing':
+        return <GeofencingPage />;
+      default:
+        return <SupervisorDashboard />;
+    }
+  };
+
   return (
-    <div className="flex h-screen bg-slate-100 overflow-hidden">
-      {/* ================= SIDEBAR ================= */}
-      <aside className="w-72 bg-[#0a0f1e] text-white flex flex-col shadow-xl">
+    <div className="flex flex-col h-screen bg-slate-100">
+      {/* ================= TOP HEADER ================= */}
+      <header className="h-16 bg-[#0a0f1e] text-white flex items-center px-6 shadow-lg">
         {/* Logo */}
-        <div className="p-6 border-b border-slate-800">
-          <div className="flex items-center gap-3">
-            <div className="bg-emerald-600 p-2 rounded-lg">
-              <Truck className="h-6 w-6 text-white" />
-            </div>
-            <div>
-              <h1 className="font-semibold tracking-tight">
-                FleetMaster Pro
-              </h1>
-              <p className="text-xs text-slate-400">
-                Supervisor Portal
-              </p>
-            </div>
+        <div className="flex items-center gap-3 mr-10">
+          <div className="bg-emerald-600 p-2 rounded-lg">
+            <Truck className="h-5 w-5 text-white" />
+          </div>
+          <div>
+            <h1 className="text-sm font-semibold leading-tight">
+              FleetMaster Pro
+            </h1>
+            <p className="text-[10px] text-slate-400">
+              Supervisor Portal
+            </p>
           </div>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-          <p className="text-xs text-slate-400 px-4 mb-3">
-            OPERATIONS
-          </p>
-
+        <nav className="flex-1 flex items-center gap-2">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = currentPage === item.id;
@@ -64,33 +87,31 @@ export function SupervisorLayout({
             return (
               <button
                 key={item.id}
-                onClick={() => onNavigate(item.id)}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition ${
+                onClick={() => setCurrentPage(item.id)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm transition ${
                   isActive
                     ? 'bg-emerald-600 text-white'
                     : 'text-slate-300 hover:bg-slate-800 hover:text-white'
                 }`}
               >
-                <Icon className="h-5 w-5" />
-                <span className="text-sm font-medium">
-                  {item.label}
-                </span>
+                <Icon className="h-4 w-4" />
+                {item.label}
               </button>
             );
           })}
         </nav>
 
-        {/* User / Logout */}
-        <div className="p-4 border-t border-slate-800">
-          <div className="flex items-center gap-3 p-3 bg-slate-800/50 rounded-lg mb-3">
-            <div className="h-10 w-10 rounded-full bg-emerald-600 flex items-center justify-center">
-              <User className="h-5 w-5 text-white" />
+        {/* User + Logout */}
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 px-3 py-2 bg-slate-800/60 rounded-lg">
+            <div className="h-8 w-8 rounded-full bg-emerald-600 flex items-center justify-center">
+              <User className="h-4 w-4 text-white" />
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">
-                Supervisor
+            <div className="hidden sm:block">
+              <p className="text-xs font-medium leading-none">
+                {user?.name || 'Supervisor'}
               </p>
-              <p className="text-xs text-slate-400 truncate">
+              <p className="text-[10px] text-slate-400">
                 Operations
               </p>
             </div>
@@ -99,17 +120,17 @@ export function SupervisorLayout({
           <Button
             onClick={onLogout}
             variant="ghost"
-            className="w-full justify-start text-slate-300 hover:bg-slate-800"
+            className="text-slate-300 hover:bg-slate-800 hover:text-white"
           >
             <LogOut className="h-4 w-4 mr-2" />
             Logout
           </Button>
         </div>
-      </aside>
+      </header>
 
       {/* ================= MAIN CONTENT ================= */}
-      <main className="flex-1 overflow-hidden bg-slate-50">
-        {children}
+      <main className="flex-1 overflow-auto bg-slate-50 p-6">
+        {renderPage()}
       </main>
     </div>
   );

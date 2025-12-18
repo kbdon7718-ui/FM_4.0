@@ -112,12 +112,15 @@ export const getVehicles = async () => {
 };
 
 /* ================================
-   TELEMETRY (READ ONLY)
+   TELEMETRY (SUPERVISOR LIVE TRACKING)
 ================================ */
 export const getLatestTelemetry = async () => {
-  const { data } = await apiClient.get('/telemetry/latest');
+  const { data } = await apiClient.get(
+    '/supervisor/live-tracking'
+  );
   return data;
 };
+
 
 /* ================================
    FUEL (SUPERVISOR + ANALYSIS)
