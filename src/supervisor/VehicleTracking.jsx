@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { MapPin, Navigation, RefreshCw, Clock3, Activity } from 'lucide-react';
-import VehicleMap from '../map/VehicleMap.jsx';
-import { getLatestTelemetry } from '../../services/api.js';
+import VehicleMap from '../components/map/VehicleMap.jsx';
+import { getLatestTelemetry } from '../services/api.js';
 
 const FALLBACK_VEHICLES = [
   { id: 'HR55AN2175', number: 'HR55AN2175', status: 'moving', statusText: 'Active', speed: 42, lat: 28.4595, lng: 77.0266, rotation: 90, address: 'Gurugram, HR', lastUpdated: 'just now' },

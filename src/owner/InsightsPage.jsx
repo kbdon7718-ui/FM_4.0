@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { Card } from '../ui/card.jsx';
+import { Card } from '../components/ui/card.jsx';
 import { Search, X, MapPin, Gauge, Fuel, User, Wrench, Calendar, FileText, DollarSign, Truck, Clock, Navigation2, Activity, Edit, Trash2, Map } from 'lucide-react';
 
 export function InsightsPage({ onNavigate }) {

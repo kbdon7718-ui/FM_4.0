@@ -1,16 +1,11 @@
 import { Navigate } from 'react-router-dom';
+import { getStoredUser } from '../services/api';
 
-/**
- * RequireRole Component
- * Protects routes by checking user role
- */
-export function RequireRole({ children, allowedRoles, userRole }) {
-  if (!userRole) {
+export default function RequireRole({ role, children }) {
+  const user = getStoredUser();
+
+  if (!user || user.role !== role) {
     return <Navigate to="/login" replace />;
-  }
-
-  if (!allowedRoles.includes(userRole)) {
-    return <Navigate to="/" replace />;
   }
 
   return children;

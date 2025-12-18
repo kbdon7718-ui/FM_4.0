@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card.jsx';
-import { Button } from '../ui/button.jsx';
-import { Input } from '../ui/input.jsx';
-import { Label } from '../ui/label.jsx';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select.jsx';
-import { Badge } from '../ui/badge.jsx';
-import { Switch } from '../ui/switch.jsx';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card.jsx';
+import { Button } from '../components/ui/button.jsx';
+import { Input } from '../components/ui/input.jsx';
+import { Label } from '../components/ui/label.jsx';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select.jsx';
+import { Badge } from '../components/ui/badge.jsx';
+import { Switch } from '../components/ui/switch.jsx';
 import { Navigation, MapPin, Clock, X, AlertCircle, CheckCircle2, Circle, Bell, Send, ZoomIn, ZoomOut, Maximize2, Plus, ChevronLeft, Search } from 'lucide-react';
 import mapBackground from 'figma:asset/84f2df699de86d311dc0b56820be473ca8ac952c.png';
 

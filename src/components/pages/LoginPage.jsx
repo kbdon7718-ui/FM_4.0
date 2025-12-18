@@ -2,7 +2,13 @@ import { useState } from 'react';
 import { Button } from '../ui/button.jsx';
 import { Input } from '../ui/input.jsx';
 import { Label } from '../ui/label.jsx';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card.jsx';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '../ui/card.jsx';
 import { Truck, Loader2, AlertCircle } from 'lucide-react';
 import { login as apiLogin } from '../../services/api';
 
@@ -11,33 +17,23 @@ export function LoginPage({ onLogin }) {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [useDemo, setUseDemo] = useState(false); // Default to API mode
+  const [useDemo, setUseDemo] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
-    // Demo mode - for quick testing without backend
     if (useDemo) {
       setTimeout(() => {
-        if (email === 'owner@fleet.com' && password === 'password123') {
-          onLogin('owner');
-        } else if (email === 'supervisor@fleet.com' && password === 'password123') {
-          onLogin('supervisor');
-        } else if (email === 'owner' && password === 'owner') {
-          onLogin('owner');
-        } else if (email === 'supervisor' && password === 'supervisor') {
-          onLogin('supervisor');
-        } else {
-          setError('Invalid credentials. Check demo credentials below.');
-        }
+        if (email.includes('owner')) onLogin('owner');
+        else if (email.includes('supervisor')) onLogin('supervisor');
+        else setError('Invalid demo credentials');
         setLoading(false);
-      }, 500);
+      }, 600);
       return;
     }
 
-    // API mode - connect to backend
     try {
       const response = await apiLogin(email, password);
       if (response.user) {
@@ -50,67 +46,60 @@ export function LoginPage({ onLogin }) {
     }
   };
 
-  const fillDemoCredentials = (role) => {
-    if (role === 'owner') {
-      setEmail('owner@fleet.com');
-      setPassword('password123');
-    } else {
-      setEmail('supervisor@fleet.com');
-      setPassword('password123');
-    }
+  const fillDemo = (role) => {
+    setEmail(`${role}@fleet.com`);
+    setPassword('password123');
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a]">
-      <Card className="w-full max-w-md mx-4 shadow-2xl border-slate-700">
-        <CardHeader className="space-y-4 text-center">
-          <div className="flex justify-center mb-2">
-            <div className="bg-[#10b981] p-4 rounded-full">
-              <Truck className="h-12 w-12 text-white" />
-            </div>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 px-4">
+      <Card className="w-full max-w-md border-slate-700 shadow-2xl">
+        <CardHeader className="text-center space-y-3">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-xl bg-emerald-600 shadow-lg">
+            <Truck className="h-7 w-7 text-white" />
           </div>
-          <CardTitle className="text-3xl">FleetMaster Pro</CardTitle>
-          <CardDescription className="text-base">
-            Fleet Management & Telematics System
+          <CardTitle className="text-3xl tracking-tight">
+            FleetMaster Pro
+          </CardTitle>
+          <CardDescription className="text-sm text-slate-500">
+            Fleet Operations, Fuel Intelligence & SLA Monitoring
           </CardDescription>
         </CardHeader>
+
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-5">
             {error && (
-              <div className="flex items-center gap-2 p-3 text-sm text-red-600 bg-red-50 rounded-lg border border-red-200">
-                <AlertCircle className="h-4 w-4" />
-                {error}
+              <div className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                <AlertCircle className="mt-0.5 h-4 w-4" />
+                <span>{error}</span>
               </div>
             )}
-            
+
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label>Email</Label>
               <Input
-                id="email"
                 type="email"
-                placeholder="Enter email"
+                placeholder="you@company.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="bg-slate-50"
                 required
               />
             </div>
+
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label>Password</Label>
               <Input
-                id="password"
                 type="password"
-                placeholder="Enter password"
+                placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="bg-slate-50"
                 required
               />
             </div>
-            
-            <Button 
-              type="submit" 
-              className="w-full bg-[#0f172a] hover:bg-[#1e293b]"
+
+            <Button
+              type="submit"
+              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
               disabled={loading}
             >
               {loading ? (
@@ -122,44 +111,41 @@ export function LoginPage({ onLogin }) {
                 'Sign In'
               )}
             </Button>
-            
-            <div className="pt-4 border-t border-slate-200">
-              <p className="text-xs text-center text-slate-500 mb-3">Quick Demo Login:</p>
-              <div className="flex gap-2">
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  size="sm"
-                  className="flex-1"
-                  onClick={() => fillDemoCredentials('owner')}
-                >
-                  Owner
-                </Button>
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  size="sm"
-                  className="flex-1"
-                  onClick={() => fillDemoCredentials('supervisor')}
-                >
-                  Supervisor
-                </Button>
-              </div>
-              <p className="text-xs text-center text-slate-400 mt-3">
-                Demo Password: password123
-              </p>
-            </div>
 
-            <div className="flex items-center justify-center gap-2 text-xs text-slate-500">
-              <label className="flex items-center gap-1 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={useDemo}
-                  onChange={(e) => setUseDemo(e.target.checked)}
-                  className="rounded"
-                />
-                Demo Mode (no backend required)
-              </label>
+            {/* Demo Section */}
+            <div className="border-t border-slate-200 pt-4 space-y-3">
+              <div className="flex items-center justify-between text-xs text-slate-500">
+                <span>Demo access (no backend)</span>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={useDemo}
+                    onChange={(e) => setUseDemo(e.target.checked)}
+                  />
+                  Enable
+                </label>
+              </div>
+
+              {useDemo && (
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => fillDemo('owner')}
+                  >
+                    Owner Demo
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => fillDemo('supervisor')}
+                  >
+                    Supervisor Demo
+                  </Button>
+                </div>
+              )}
             </div>
           </form>
         </CardContent>
