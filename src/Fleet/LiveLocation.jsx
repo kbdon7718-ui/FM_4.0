@@ -1,56 +1,26 @@
-import { useEffect, useRef } from 'react';
-import api from '@/services/api';
+import { MapContainer, TileLayer, Marker } from 'react-leaflet';
+import { useEffect, useState } from 'react';
 
-export default function LiveLocation() {
-  const watchIdRef = useRef(null);
-
-  useEffect(() => {
-    if (!navigator.geolocation) {
-      alert('GPS not supported');
-      return;
-    }
-
-    watchIdRef.current = navigator.geolocation.watchPosition(
-      async (pos) => {
-        const { latitude, longitude, speed } = pos.coords;
-
-        // SEND EVERY UPDATE (≈ 1 sec)
-        await api.post('/gps/log', {
-          latitude,
-          longitude,
-          speed: speed || 0
-        });
-      },
-      (err) => console.error(err),
-      {
-        enableHighAccuracy: true,
-        maximumAge: 0,
-        timeout: 10000
-      }
-    );
-
-    return () => {
-      if (watchIdRef.current) {
-        navigator.geolocation.clearWatch(watchIdRef.current);
-      }
-    };
-  }, []);
-
+/* =========================
+   LIVE LOCATION STATUS (NO GPS SEND)
+========================= */
+export function LiveLocation() {
   return (
     <div className="bg-white p-4 rounded shadow">
       <h2 className="font-semibold text-green-600">
-        Live Location Sharing ON
+        Live Location Tracking
       </h2>
       <p className="text-sm text-gray-600">
-        Your movement is tracked in real-time
+        Location is being tracked from Fleet Map
       </p>
     </div>
   );
 }
-import { MapContainer, TileLayer, Marker } from 'react-leaflet';
-import { useEffect, useState } from 'react';
 
-export default function LiveFleetMap() {
+/* =========================
+   MAP VIEW ONLY
+========================= */
+export function LiveFleetMap() {
   const [position, setPosition] = useState([28.6139, 77.2090]);
 
   useEffect(() => {

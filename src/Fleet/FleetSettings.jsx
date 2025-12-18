@@ -1,5 +1,13 @@
 import { useState } from 'react';
 
+const BASE_URL =
+  import.meta.env.VITE_API_URL || 'http://localhost:5002';
+
+const API_BASE_URL = BASE_URL.endsWith('/api')
+  ? BASE_URL
+  : `${BASE_URL}/api`;
+
+
 export default function FleetSettings({ onVehicleAssigned }) {
   const [vehicleNumber, setVehicleNumber] = useState('');
   const [loading, setLoading] = useState(false);
@@ -12,9 +20,10 @@ export default function FleetSettings({ onVehicleAssigned }) {
     setError('');
 
     try {
-      const res = await fetch(
-  `${import.meta.env.VITE_API_URL}/api/fleet/assign-vehicle`,
+    const res = await fetch(
+  `${API_BASE_URL}/fleet/assign-vehicle`,
   {
+
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

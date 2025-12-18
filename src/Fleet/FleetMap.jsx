@@ -1,13 +1,21 @@
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import { useEffect, useRef, useState } from 'react';
 
+const BASE_URL =
+  import.meta.env.VITE_API_URL || 'http://localhost:5002';
+
+const API_BASE_URL = BASE_URL.endsWith('/api')
+  ? BASE_URL
+  : `${BASE_URL}/api`;
+
 export default function FleetMap({ user }) {
   const mapRef = useRef(null);
   const watchIdRef = useRef(null);
-  const lastSentRef = useRef(0); // throttle backend calls
+  const lastSentRef = useRef(0);
 
   const [position, setPosition] = useState(null);
   const [error, setError] = useState('');
+  const [lastSentAt, setLastSentAt] = useState(null); // 🔹 small addition
 
   useEffect(() => {
     if (!navigator.geolocation) {
@@ -15,7 +23,6 @@ export default function FleetMap({ user }) {
       return;
     }
 
-    // START LIVE TRACKING
     watchIdRef.current = navigator.geolocation.watchPosition(
       (pos) => {
         const latitude = pos.coords.latitude;
@@ -25,7 +32,6 @@ export default function FleetMap({ user }) {
         const coords = [latitude, longitude];
         setPosition(coords);
 
-        // Move map smoothly
         if (mapRef.current) {
           mapRef.current.setView(coords, mapRef.current.getZoom(), {
             animate: true,
@@ -34,15 +40,19 @@ export default function FleetMap({ user }) {
 
         // 🔥 SEND LOCATION TO BACKEND (every 5 sec)
         const now = Date.now();
+
+        // ✅ DO NOT send if vehicle not assigned
+        if (!user?.vehicle_id) return;
+
         if (now - lastSentRef.current > 5000) {
           lastSentRef.current = now;
 
-          fetch('http://localhost:5000/api/fleet/location', {
+          fetch(`${API_BASE_URL}/fleet/location`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
               'x-role': 'FLEET',
-              'x-vehicle-id': user?.vehicle_id, // IMPORTANT
+              'x-vehicle-id': user.vehicle_id,
             },
             body: JSON.stringify({
               latitude,
@@ -50,9 +60,13 @@ export default function FleetMap({ user }) {
               speed,
               ignition: true,
             }),
-          }).catch((err) => {
-            console.error('Failed to send GPS', err);
-          });
+          })
+            .then(() => {
+              setLastSentAt(new Date()); // 🔹 debug only
+            })
+            .catch((err) => {
+              console.error('Failed to send GPS', err);
+            });
         }
       },
       (err) => {
@@ -66,7 +80,6 @@ export default function FleetMap({ user }) {
       }
     );
 
-    // CLEANUP on unmount
     return () => {
       if (watchIdRef.current !== null) {
         navigator.geolocation.clearWatch(watchIdRef.current);
@@ -114,6 +127,13 @@ export default function FleetMap({ user }) {
         />
         <Marker position={position} />
       </MapContainer>
+
+      {/* 🔹 Small debug helper */}
+      {lastSentAt && (
+        <div className="text-xs text-green-600 mt-1 text-center">
+          Last GPS sent at {lastSentAt.toLocaleTimeString()}
+        </div>
+      )}
     </div>
   );
 }
