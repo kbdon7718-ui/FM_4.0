@@ -13,8 +13,8 @@ export default function FleetSettings({ onVehicleAssigned }) {
 
     try {
       const res = await fetch(
-        'http://localhost:5002/api/fleet/assign-vehicle',
-        {
+  `${import.meta.env.VITE_API_URL}/api/fleet/assign-vehicle`,
+  {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

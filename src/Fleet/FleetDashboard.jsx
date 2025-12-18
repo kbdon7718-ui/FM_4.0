@@ -3,6 +3,8 @@ import FleetLayout from './FleetLayout';
 import FleetMap from './FleetMap';
 import FleetSettings from './FleetSettings';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL;
+
 export default function FleetDashboard({ onLogout }) {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [vehicle, setVehicle] = useState(null);
@@ -20,8 +22,16 @@ export default function FleetDashboard({ onLogout }) {
   useEffect(() => {
     if (!vehicle) return;
 
-    fetch(
-      `http://localhost:5000/api/fleet/distance?vehicle_id=${vehicle.vehicle_id}&start=${todayStart.toISOString()}&end=${now.toISOString()}`,
+     // ✅ DEFINE VARIABLES HERE
+    const start = new Date();
+    start.setHours(0, 0, 0, 0);
+
+    const end = new Date();
+
+
+    
+  fetch(
+      `${API_BASE_URL}/api/fleet/distance?vehicle_id=${vehicle.vehicle_id}&start=${start.toISOString()}&end=${end.toISOString()}`,
       {
         headers: {
           'x-role': 'OWNER', // TEMP (can allow FLEET later)
