@@ -55,6 +55,7 @@ export default function FleetLayout({ onLogout, user }) {
 
   return (
     <div className="min-h-screen bg-slate-100 flex flex-col">
+<<<<<<< HEAD
       {/* =========================
          HEADER
       ========================= */}
@@ -67,6 +68,12 @@ export default function FleetLayout({ onLogout, user }) {
         <button onClick={onLogout} className="text-sm underline">
           Logout
         </button>
+=======
+      {/* Header */}
+      <header className="bg-blue-600 text-white px-6 py-4">
+        <h1 className="text-lg font-semibold">Fleet dekha raha hu Dashboard</h1>
+        <p className="text-sm opacity-80">Live vehicle tracking</p>
+>>>>>>> 4fddb3e38d07adece8afcec33e4fd12d7636ba6a
       </header>
 
       {/* =========================
