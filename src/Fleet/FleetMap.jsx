@@ -1,45 +1,60 @@
-import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import { useEffect, useRef, useState } from 'react';
 
-const BASE_URL = import.meta.env.VITE_API_URL;
+const BASE_URL =
+  import.meta.env.VITE_API_URL || 'http://localhost:5002';
+
 const API_BASE_URL = BASE_URL.endsWith('/api')
   ? BASE_URL
   : `${BASE_URL}/api`;
 
 export default function FleetMap({ user }) {
   const mapRef = useRef(null);
+  const markerRef = useRef(null);
   const watchIdRef = useRef(null);
   const lastSentRef = useRef(0);
 
-  const [position, setPosition] = useState(null);
   const [error, setError] = useState('');
-  const [lastSentAt, setLastSentAt] = useState(null); // 🔹 small addition
 
   useEffect(() => {
+    if (!window.mappls) {
+      setError('Mappls SDK not loaded');
+      return;
+    }
+
     if (!navigator.geolocation) {
       setError('Geolocation not supported');
       return;
     }
 
+    // 🔹 INIT MAP
+    const map = new window.mappls.Map('fleet-map', {
+      center: [28.6139, 77.209],
+      zoom: 16,
+    });
+
+    mapRef.current = map;
+
+    // 🔹 CREATE MARKER
+    markerRef.current = new window.mappls.Marker({
+      map,
+      position: { lat: 28.6139, lng: 77.209 },
+    });
+
+    // 🔹 WATCH GPS
     watchIdRef.current = navigator.geolocation.watchPosition(
       (pos) => {
-        const latitude = pos.coords.latitude;
-        const longitude = pos.coords.longitude;
-        const speed = pos.coords.speed || 0;
+        const { latitude, longitude, speed } = pos.coords;
 
-        const coords = [latitude, longitude];
-        setPosition(coords);
+        // Move marker
+        markerRef.current.setPosition({
+          lat: latitude,
+          lng: longitude,
+        });
 
-        if (mapRef.current) {
-          mapRef.current.setView(coords, mapRef.current.getZoom(), {
-            animate: true,
-          });
-        }
+        map.setCenter([latitude, longitude]);
 
-        // 🔥 SEND LOCATION TO BACKEND (every 5 sec)
+        // 🔥 SEND GPS (every 5 sec)
         const now = Date.now();
-
-        // ✅ DO NOT send if vehicle not assigned
         if (!user?.vehicle_id) return;
 
         if (now - lastSentRef.current > 5000) {
@@ -55,36 +70,16 @@ export default function FleetMap({ user }) {
             body: JSON.stringify({
               latitude,
               longitude,
-              speed,
+              speed: speed || 0,
               ignition: true,
             }),
-          })
-            .then(() => {
-              setLastSentAt(new Date()); // 🔹 debug only
-            })
-            .catch((err) => {
-              console.error('Failed to send GPS', err);
-            });
+          }).catch(() => {});
         }
       },
       (err) => {
-  console.error(err);
-
-  switch (err.code) {
-    case err.PERMISSION_DENIED:
-      setError('Location permission denied');
-      break;
-    case err.POSITION_UNAVAILABLE:
-      setError('Location unavailable. Check GPS or network');
-      break;
-    case err.TIMEOUT:
-      setError('Location request timed out');
-      break;
-    default:
-      setError('Unable to fetch location');
-  }
-},
-
+        console.error(err);
+        setError('Unable to fetch GPS location');
+      },
       {
         enableHighAccuracy: true,
         maximumAge: 0,
@@ -93,7 +88,7 @@ export default function FleetMap({ user }) {
     );
 
     return () => {
-      if (watchIdRef.current !== null) {
+      if (watchIdRef.current) {
         navigator.geolocation.clearWatch(watchIdRef.current);
       }
     };
@@ -107,45 +102,14 @@ export default function FleetMap({ user }) {
     );
   }
 
-  if (!position) {
-    return (
-      <div className="flex items-center justify-center h-[500px] text-gray-500">
-        Fetching live location...
-      </div>
-    );
-  }
-
   return (
     <div
+      id="fleet-map"
       style={{
         height: '500px',
         width: '100%',
         borderRadius: '8px',
-        overflow: 'hidden',
       }}
-    >
-      <MapContainer
-        center={position}
-        zoom={16}
-        style={{ height: '100%', width: '100%' }}
-        whenCreated={(map) => {
-          mapRef.current = map;
-          setTimeout(() => map.invalidateSize(), 300);
-        }}
-      >
-        <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution="© OpenStreetMap contributors"
-        />
-        <Marker position={position} />
-      </MapContainer>
-
-      {/* 🔹 Small debug helper */}
-      {lastSentAt && (
-        <div className="text-xs text-green-600 mt-1 text-center">
-          Last GPS sent at {lastSentAt.toLocaleTimeString()}
-        </div>
-      )}
-    </div>
+    />
   );
 }

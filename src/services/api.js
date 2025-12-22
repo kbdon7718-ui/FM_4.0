@@ -130,20 +130,21 @@ export const getLatestTelemetry = async () => {
 
 
 /* ================================
-   FUEL (SUPERVISOR + ANALYSIS)
+   FUEL (SUPERVISOR + OWNER)
 ================================ */
+
+// Supervisor → create fuel entry
 export const createFuelEntry = async (payload) => {
   const { data } = await apiClient.post('/fuel', payload);
   return data;
 };
 
-export const runFuelAnalysis = async (payload) => {
-  const { data } = await apiClient.post(
-    '/fuel/analyze',
-    payload
-  );
+// Owner → fetch fuel analysis
+export const getFuelAnalysis = async () => {
+  const { data } = await apiClient.get('/analysis');
   return data;
 };
+
 
 /* ================================
    SLA / GEOFENCING
@@ -191,7 +192,8 @@ const api = {
    getOwnerDashboard,
    
   createFuelEntry,
-  runFuelAnalysis,
+  
+  getFuelAnalysis,
 
   processSLA,
   runCorrelation,

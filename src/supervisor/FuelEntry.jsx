@@ -1,231 +1,274 @@
-import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  Loader2,
-  AlertCircle,
-  CheckCircle2,
-  Droplet,
-  Calendar,
-  Truck,
-  Plus
-} from 'lucide-react';
-import api from '@/services/api';
+import { useEffect, useState } from "react";
 
-/**
- * Supervisor Fuel Entry + Add Vehicle
- * Supervisor can:
- * - Add vehicle
- * - Enter fuel
- * - NO analysis shown
- */
 export function FuelEntry() {
-  /* -------------------- STATE -------------------- */
   const [vehicles, setVehicles] = useState([]);
-  const [vehicleId, setVehicleId] = useState('');
-
-  // Fuel
-  const [fuelQty, setFuelQty] = useState('');
-  const [fuelDate, setFuelDate] = useState(
-    new Date().toISOString().split('T')[0]
+  const [vehicleId, setVehicleId] = useState("");
+  const [fuel, setFuel] = useState("");
+  const [price, setPrice] = useState(""); // UI-only
+  const [date, setDate] = useState(
+    new Date().toISOString().split("T")[0]
   );
 
-  // Add vehicle
-  const [showAddVehicle, setShowAddVehicle] = useState(false);
-  const [vehicleNumber, setVehicleNumber] = useState('');
-  const [vehicleType, setVehicleType] = useState('');
+  // kept but unused (as requested)
+  const [search, setSearch] = useState("");
+  const [showList, setShowList] = useState(false);
 
+  const [recentEntries, setRecentEntries] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
-  const [messageType, setMessageType] = useState('');
 
-  /* -------------------- LOAD VEHICLES -------------------- */
+  const BASE_URL =
+    import.meta.env.VITE_API_URL || "http://localhost:5002";
+  const API_BASE_URL = BASE_URL.endsWith("/api")
+    ? BASE_URL
+    : `${BASE_URL}/api`;
+
+  /* =====================================
+     FETCH VEHICLES + RECENT FUEL
+  ===================================== */
   useEffect(() => {
-    loadVehicles();
+    fetchVehicles();
+    fetchRecentFuel();
   }, []);
 
-  async function loadVehicles() {
-    try {
-      const data = await api.getVehicles();
-      setVehicles(data || []);
-    } catch (err) {
-      console.error('Vehicle load failed', err);
-    }
-  }
+  useEffect(() => {
+    console.log("Vehicles in FuelEntry:", vehicles);
+  }, [vehicles]);
 
-  /* -------------------- ADD VEHICLE -------------------- */
-  async function handleAddVehicle(e) {
-    e.preventDefault();
-    setLoading(true);
-    setMessage('');
-
+  const fetchVehicles = async () => {
     try {
-      await api.createVehicle({
-        vehicle_number: vehicleNumber,
-        vehicle_type: vehicleType,
+      const res = await fetch(`${API_BASE_URL}/vehicles`, {
+        headers: {
+          "x-role": "SUPERVISOR",
+        },
       });
 
-      setMessageType('success');
-      setMessage('✓ Vehicle added successfully');
-      setVehicleNumber('');
-      setVehicleType('');
-      setShowAddVehicle(false);
-
-      await loadVehicles();
+      const data = await res.json();
+      setVehicles(Array.isArray(data) ? data : []);
     } catch (err) {
-      setMessageType('error');
-      setMessage(err?.message || 'Failed to add vehicle');
+      console.error("Vehicle fetch failed", err);
+      setVehicles([]);
+    }
+  };
+
+  const fetchRecentFuel = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/fuel/recent`, {
+        headers: {
+          "x-role": "SUPERVISOR",
+        },
+      });
+
+      const data = await res.json();
+      setRecentEntries(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error("Recent fuel fetch failed", err);
+      setRecentEntries([]);
+    }
+  };
+
+  /* =====================================
+     CALCULATED COST (UI ONLY)
+  ===================================== */
+  const totalCost =
+    fuel && price ? (Number(fuel) * Number(price)).toFixed(2) : "";
+
+  /* =====================================
+     SUBMIT FUEL ENTRY
+  ===================================== */
+  const handleSubmit = async () => {
+    if (loading) return;
+
+    if (!vehicleId || !fuel) {
+      alert("Please select vehicle and enter fuel");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/fuel`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-role": "SUPERVISOR",
+        },
+        body: JSON.stringify({
+          vehicle_id: vehicleId,
+          fuel_date: date,
+          fuel_quantity: Number(fuel),
+          entered_by: "supervisor-id",
+        }),
+      });
+
+      if (!res.ok) throw new Error("Insert failed");
+
+      setFuel("");
+      setPrice("");
+      setVehicleId("");
+      setSearch("");
+      setShowList(false);
+
+      fetchRecentFuel();
+    } catch (err) {
+      alert("Failed to save fuel entry");
+      console.error(err);
     } finally {
       setLoading(false);
     }
-  }
+  };
 
-  /* -------------------- FUEL ENTRY -------------------- */
-  async function handleFuelSubmit(e) {
-    e.preventDefault();
-    setLoading(true);
-    setMessage('');
+  /* =====================================
+     DERIVED DATA
+  ===================================== */
+  const selectedVehicleNumber =
+    vehicles.find(v => v.vehicle_id === vehicleId)?.vehicle_number || "";
 
-    try {
-      // Save fuel
-      await api.createFuelEntry({
-        vehicle_id: vehicleId,
-        fuel_quantity: Number(fuelQty),
-        fuel_date: fuelDate,
-      });
-
-      // Trigger backend logic (no UI output)
-      await api.runFuelAnalysis({
-        vehicle_id: vehicleId,
-        route_id: null,
-        date: fuelDate,
-      });
-
-      setMessageType('success');
-      setMessage('✓ Fuel entry saved');
-      setFuelQty('');
-      setVehicleId('');
-    } catch (err) {
-      setMessageType('error');
-      setMessage(err?.message || 'Fuel entry failed');
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  /* -------------------- UI -------------------- */
+  /* =====================================
+     UI
+  ===================================== */
   return (
-    <div className="p-8 max-w-3xl space-y-8">
-      <h1 className="text-3xl font-bold">Supervisor Portal</h1>
+    <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+      {/* LEFT CARD */}
+      <div className="bg-white rounded-xl border p-6">
+        <h2 className="text-xl font-semibold mb-6">
+          ⛽ Record Fuel Entry
+        </h2>
 
-      {/* ---------------- ADD VEHICLE ---------------- */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Plus className="h-5 w-5 text-green-600" />
-            Add New Vehicle
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleAddVehicle} className="space-y-4">
-            <Input
-              placeholder="Vehicle Number (e.g. HR55AN2175)"
-              value={vehicleNumber}
-              onChange={(e) => setVehicleNumber(e.target.value)}
-              required
-            />
-            <Input
-              placeholder="Vehicle Type (Bus / Mini Bus)"
-              value={vehicleType}
-              onChange={(e) => setVehicleType(e.target.value)}
-            />
-            <Button
-              type="submit"
-              disabled={loading}
-              className="bg-green-600 hover:bg-green-700"
+        {/* VEHICLE SEARCH */}
+        <label className="block text-sm mb-1">Vehicle</label>
+
+        <div className="relative mb-4">
+          <input
+            type="text"
+            placeholder="Search vehicle number..."
+            className="w-full border rounded-lg p-2"
+            value={search || selectedVehicleNumber}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setVehicleId("");
+              setShowList(true);
+            }}
+            onFocus={() => setShowList(true)}
+          />
+
+          {showList && (
+            <div
+              className="absolute z-10 w-full bg-white border rounded-lg mt-1 max-h-48 overflow-y-auto shadow"
+              onMouseDown={(e) => e.preventDefault()}
             >
-              {loading ? 'Saving...' : 'Add Vehicle'}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+              {vehicles
+                .filter(v => {
+                  if (!search) return true;
+                  return v.vehicle_number
+                    ?.toLowerCase()
+                    .includes(search.toLowerCase());
+                })
+                .map(v => (
+                  <div
+                    key={v.vehicle_id}
+                    className="px-3 py-2 cursor-pointer hover:bg-blue-50"
+                    onClick={() => {
+                      setVehicleId(v.vehicle_id);
+                      setSearch(v.vehicle_number);
+                      setShowList(false);
+                    }}
+                  >
+                    {v.vehicle_number}
+                  </div>
+                ))}
 
-      {/* ---------------- FUEL ENTRY ---------------- */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Droplet className="h-5 w-5 text-blue-600" />
-            Fuel Entry
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleFuelSubmit} className="space-y-5">
-            {/* Vehicle */}
-            <select
-              value={vehicleId}
-              onChange={(e) => setVehicleId(e.target.value)}
-              required
-              className="w-full px-4 py-2 border rounded-lg"
-            >
-              <option value="">Select Vehicle</option>
-              {vehicles.map((v) => (
-                <option key={v.vehicle_id} value={v.vehicle_id}>
-                  {v.vehicle_number}
-                </option>
-              ))}
-            </select>
-
-            {/* Fuel */}
-            <Input
-              type="number"
-              step="0.01"
-              placeholder="Fuel (Liters)"
-              value={fuelQty}
-              onChange={(e) => setFuelQty(e.target.value)}
-              required
-            />
-
-            {/* Date */}
-            <Input
-              type="date"
-              value={fuelDate}
-              onChange={(e) => setFuelDate(e.target.value)}
-              required
-            />
-
-            {/* Message */}
-            {message && (
-              <div
-                className={`p-3 rounded ${
-                  messageType === 'success'
-                    ? 'bg-green-50 text-green-700'
-                    : 'bg-red-50 text-red-700'
-                }`}
-              >
-                {message}
-              </div>
-            )}
-
-            <Button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-700"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                'Submit Fuel Entry'
+              {vehicles.length === 0 && (
+                <div className="px-3 py-2 text-sm text-gray-500">
+                  No vehicles found
+                </div>
               )}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+            </div>
+          )}
+        </div>
+
+        {/* FUEL */}
+        <label className="block text-sm mb-1">
+          Fuel Amount (Liters)
+        </label>
+        <input
+          type="number"
+          className="w-full border rounded-lg p-2 mb-4"
+          value={fuel}
+          onChange={(e) => setFuel(e.target.value)}
+        />
+
+        {/* PRICE */}
+        <label className="block text-sm mb-1">
+          Fuel Price (₹ / Liter)
+          <span className="text-xs text-gray-400"> (optional)</span>
+        </label>
+        <input
+          type="number"
+          className="w-full border rounded-lg p-2 mb-4"
+          value={price}
+          onChange={(e) => setPrice(e.target.value)}
+        />
+
+        {/* COST */}
+        <label className="block text-sm mb-1">Total Cost (₹)</label>
+        <input
+          type="text"
+          className="w-full border rounded-lg p-2 mb-4 bg-gray-100"
+          value={totalCost}
+          readOnly
+        />
+
+        {/* DATE */}
+        <label className="block text-sm mb-1">Date</label>
+        <input
+          type="date"
+          className="w-full border rounded-lg p-2 mb-6"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+        />
+
+        <button
+          onClick={handleSubmit}
+          disabled={loading}
+          className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold"
+        >
+          {loading ? "Saving..." : "Record Entry"}
+        </button>
+      </div>
+
+      {/* RIGHT CARD */}
+      <div className="bg-white rounded-xl border p-6">
+        <h2 className="text-xl font-semibold mb-6">
+          🕒 Recent Entries
+        </h2>
+
+        {recentEntries.length === 0 && (
+          <p className="text-sm text-gray-500">
+            No fuel entries yet
+          </p>
+        )}
+
+        {recentEntries.map((e) => (
+          <div
+            key={e.fuel_entry_id}
+            className="flex justify-between bg-gray-50 p-4 rounded-lg mb-3"
+          >
+            <div>
+              <p className="font-semibold">
+                {e.vehicles?.vehicle_number || "—"}
+              </p>
+              <p className="text-sm text-gray-500">
+                {e.fuel_quantity} L
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-sm text-gray-500">
+                {e.fuel_date}
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
-
-export default FuelEntry;

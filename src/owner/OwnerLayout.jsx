@@ -18,11 +18,13 @@ import { Button } from '../components/ui/button.jsx';
 ========================= */
 import OwnerDashboard from './OwnerDashboard.jsx';
 import { FuelAnalysis } from './FuelAnalysis.jsx';
-import { SLAReports } from './SLAReports.jsx';
+import SLAReports  from './SLAReports.jsx';
 import { RiskInsights } from './RiskInsights.jsx';
 import { Penalties } from './Penalties.jsx';
 import { FuelReports } from './FuelReports.jsx';
 import { Settings } from './Settings.jsx';
+import AddVehicle from './AddVehicle.jsx';
+
 
 /**
  * OwnerLayout
@@ -38,6 +40,7 @@ export function OwnerLayout({ onLogout, user }) {
     { id: 'sla-reports', label: 'SLA Reports', icon: BarChart3 },
     { id: 'risk-insights', label: 'Risk Insights', icon: TrendingUp },
     { id: 'penalties', label: 'Penalties', icon: AlertTriangle },
+    { id: 'addvehicle', label: 'Add Vehicle', icon: SettingsIcon },
     { id: 'settings', label: 'Settings', icon: SettingsIcon },
   ];
 
@@ -55,6 +58,8 @@ export function OwnerLayout({ onLogout, user }) {
         return <Penalties />;
       case 'settings':
         return <Settings />;
+        case 'addvehicle':
+        return <AddVehicle/>;
       case 'dashboard':
       default:
         return <OwnerDashboard />;

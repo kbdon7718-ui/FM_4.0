@@ -1,58 +1,77 @@
-import { MapContainer, TileLayer, Marker } from 'react-leaflet';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 /* =========================
-   LIVE LOCATION STATUS (NO GPS SEND)
-========================= */
-export function LiveLocation() {
-  return (
-    <div className="bg-white p-4 rounded shadow">
-      <h2 className="font-semibold text-green-600">
-        Live Location Tracking
-      </h2>
-      <p className="text-sm text-gray-600">
-        Location is being tracked from Fleet Map
-      </p>
-    </div>
-  );
-}
-
-/* =========================
-   MAP VIEW ONLY
+   MAPPLS MAP VIEW
 ========================= */
 export function LiveFleetMap() {
-  const [position, setPosition] = useState([28.6139, 77.2090]);
+  const mapRef = useRef(null);
+  const markerRef = useRef(null);
+  const watchIdRef = useRef(null);
+
+  const [error, setError] = useState('');
 
   useEffect(() => {
+    if (!window.mappls) {
+      setError('Mappls SDK not loaded');
+      return;
+    }
+
+    // Initialize map
+    const map = new window.mappls.Map('fleet-map', {
+      center: [28.6139, 77.2090],
+      zoom: 15,
+    });
+
+    mapRef.current = map;
+
+    // Add marker
+    markerRef.current = new window.mappls.Marker({
+      map,
+      position: { lat: 28.6139, lng: 77.2090 },
+    });
+
+    // Watch GPS
     if (!navigator.geolocation) return;
 
-    const watchId = navigator.geolocation.watchPosition(
+    watchIdRef.current = navigator.geolocation.watchPosition(
       (pos) => {
-        setPosition([pos.coords.latitude, pos.coords.longitude]);
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+
+        markerRef.current.setPosition({ lat, lng });
+        map.setCenter([lat, lng]);
       },
-      (err) => console.error(err),
+      (err) => {
+        console.error(err);
+        setError('Unable to fetch GPS location');
+      },
       { enableHighAccuracy: true }
     );
 
-    return () => navigator.geolocation.clearWatch(watchId);
+    return () => {
+      if (watchIdRef.current) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+      }
+    };
   }, []);
 
+  if (error) {
+    return (
+      <div className="text-red-600 text-center mt-10">
+        {error}
+      </div>
+    );
+  }
+
   return (
-    <div className="h-[500px] w-full rounded-lg overflow-hidden border">
-      <MapContainer
-        center={position}
-        zoom={15}
-        className="h-full w-full"
-        whenCreated={(map) =>
-          setTimeout(() => map.invalidateSize(), 200)
-        }
-      >
-        <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution="© OpenStreetMap contributors"
-        />
-        <Marker position={position} />
-      </MapContainer>
-    </div>
+    <div
+      id="fleet-map"
+      style={{
+        height: '500px',
+        width: '100%',
+        borderRadius: '8px',
+        overflow: 'hidden',
+      }}
+    />
   );
 }
