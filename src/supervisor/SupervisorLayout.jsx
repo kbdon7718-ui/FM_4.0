@@ -21,7 +21,7 @@ import { Button } from '../components/ui/button.jsx';
 import SupervisorDashboard from './SupervisorDashboard.jsx';
 import { FuelEntry } from './FuelEntry.jsx';
 import { LiveTracking } from './LiveTracking.jsx';
-import { VehicleTracking } from './VehicleTracking.jsx';
+//import { VehicleTracking } from './VehicleTracking.jsx';
 //import { ComplaintsPanel } from './ComplaintsPanel.jsx';
 import GeofencingPage  from './GeofencingPage.jsx';
 import { Maintenance } from './Maintenance.jsx';
@@ -41,7 +41,7 @@ export function SupervisorLayout({ onLogout, user }) {
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'fuel-entry', label: 'Fuel Entry', icon: Droplet },
     { id: 'live-tracking', label: 'Live Tracking', icon: Navigation },
-    { id: 'vehicle-tracking', label: 'Vehicle Tracking', icon: Truck },
+   // { id: 'vehicle-tracking', label: 'Vehicle Tracking', icon: Truck },
   //  { id: 'complaints', label: 'Complaints', icon: AlertCircle },
     { id: 'geofencing', label: 'Geofencing', icon: MapPin },
     { id: 'maintenance', label: 'Maintenance', icon: Wrench },
@@ -57,8 +57,8 @@ export function SupervisorLayout({ onLogout, user }) {
         return <FuelEntry />;
       case 'live-tracking':
         return <LiveTracking />;
-      case 'vehicle-tracking':
-        return <VehicleTracking />;
+      //case 'vehicle-tracking':
+       // return <VehicleTracking />;
     //  case 'complaints':
       //  return <ComplaintsPanel />;
       case 'geofencing':

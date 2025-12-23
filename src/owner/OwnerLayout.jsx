@@ -22,9 +22,9 @@ import { Button } from '../components/ui/button.jsx';
 import OwnerDashboard from './OwnerDashboard.jsx';
 import { FuelAnalysis } from './FuelAnalysis.jsx';
 import SLAReports  from './SLAReports.jsx';
-import { RiskInsights } from './RiskInsights.jsx';
-import { Penalties } from './Penalties.jsx';
-import { FuelReports } from './FuelReports.jsx';
+//import { RiskInsights } from './RiskInsights.jsx';
+//import { Penalties } from './Penalties.jsx';
+//import { FuelReports } from './FuelReports.jsx';
 import { Settings } from './Settings.jsx';
 import AddVehicle from './AddVehicle.jsx';
 import { OwnerLiveTracking } from './OwnerLiveTracking.jsx';
@@ -43,10 +43,10 @@ export function OwnerLayout({ onLogout, user }) {
     { id: 'live-tracking', label: 'Live Tracking', icon: MapPin },
     { id: 'route-tracing', label: 'Route Tracing', icon: Activity },
     { id: 'fuel-analysis', label: 'Fuel Analysis', icon: Droplet },
-    { id: 'fuel-reports', label: 'Fuel Reports', icon: FileText },
+    //{ id: 'fuel-reports', label: 'Fuel Reports', icon: FileText },
     { id: 'sla-reports', label: 'SLA Reports', icon: BarChart3 },
-    { id: 'risk-insights', label: 'Risk Insights', icon: TrendingUp },
-    { id: 'penalties', label: 'Penalties', icon: AlertTriangle },
+  //  { id: 'risk-insights', label: 'Risk Insights', icon: TrendingUp },
+   // { id: 'penalties', label: 'Penalties', icon: AlertTriangle },
     { id: 'addvehicle', label: 'Add Vehicle', icon: SettingsIcon },
     { id: 'settings', label: 'Settings', icon: SettingsIcon },
   ];
@@ -59,14 +59,14 @@ export function OwnerLayout({ onLogout, user }) {
         return <RouteTracing />;
       case 'fuel-analysis':
         return <FuelAnalysis />;
-      case 'fuel-reports':
-        return <FuelReports />;
+     // case 'fuel-reports':
+       // return <FuelReports />;
       case 'sla-reports':
         return <SLAReports />;
-      case 'risk-insights':
-        return <RiskInsights />;
-      case 'penalties':
-        return <Penalties />;
+     // case 'risk-insights':
+       // return <RiskInsights />;
+      //case 'penalties':
+        //return <Penalties />;
       case 'settings':
         return <Settings />;
         case 'addvehicle':
