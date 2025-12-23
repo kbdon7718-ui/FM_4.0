@@ -1,7 +1,10 @@
 import { useState } from 'react';
+
 import {
   LayoutDashboard,
   Droplet,
+  MapPin,
+  Activity,
   BarChart3,
   TrendingUp,
   AlertTriangle,
@@ -24,6 +27,8 @@ import { Penalties } from './Penalties.jsx';
 import { FuelReports } from './FuelReports.jsx';
 import { Settings } from './Settings.jsx';
 import AddVehicle from './AddVehicle.jsx';
+import { OwnerLiveTracking } from './OwnerLiveTracking.jsx';
+import { RouteTracing } from './RouteTracing.jsx';
 
 
 /**
@@ -35,6 +40,8 @@ export function OwnerLayout({ onLogout, user }) {
 
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { id: 'live-tracking', label: 'Live Tracking', icon: MapPin },
+    { id: 'route-tracing', label: 'Route Tracing', icon: Activity },
     { id: 'fuel-analysis', label: 'Fuel Analysis', icon: Droplet },
     { id: 'fuel-reports', label: 'Fuel Reports', icon: FileText },
     { id: 'sla-reports', label: 'SLA Reports', icon: BarChart3 },
@@ -46,6 +53,10 @@ export function OwnerLayout({ onLogout, user }) {
 
   const renderPage = () => {
     switch (currentPage) {
+      case 'live-tracking':
+        return <OwnerLiveTracking />;
+      case 'route-tracing':
+        return <RouteTracing />;
       case 'fuel-analysis':
         return <FuelAnalysis />;
       case 'fuel-reports':

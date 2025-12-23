@@ -128,6 +128,29 @@ export const getLatestTelemetry = async () => {
   return data;
 };
 
+/* ================================
+   OWNER TELEMETRY (OWNER LIVE TRACKING)
+================================ */
+export const getOwnerLatestTelemetry = async () => {
+  const { data } = await apiClient.get(
+    '/owner/live-tracking'
+  );
+  return data;
+};
+
+/* ================================
+   OWNER ROUTE TRACING
+================================ */
+export const getOwnerRouteHistory = async (vehicleId, date) => {
+  const { data } = await apiClient.get(
+    '/owner/route-history',
+    {
+      params: { vehicle_id: vehicleId, date: date }
+    }
+  );
+  return data;
+};
+
 
 /* ================================
    FUEL (SUPERVISOR + OWNER)
