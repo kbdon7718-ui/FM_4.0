@@ -378,7 +378,7 @@ export function AssignDriver() {
                     currentAssignments.map((assignment) => (
                       <div key={assignment.assignment_id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
                         <div className="flex justify-between items-start mb-2">
-                          <div className="flex-1">
+                          <div className="flex-1 h-screen overflow-hidden">
                             <p className="font-semibold text-gray-800">{assignment.vehicle_number}</p>
                             <p className="text-sm text-blue-600 font-medium">
                               👤 {assignment.driver_name}

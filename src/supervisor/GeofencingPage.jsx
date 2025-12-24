@@ -1,4 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
+import { getLatestTelemetry } from '../services/api.js';
+import { MapPin, Car, Clock, Phone, Wrench, Activity, Eye, EyeOff } from 'lucide-react';
+
 function zoomByRadius(radius) {
   if (radius <= 200) return 18;
   if (radius <= 500) return 16;
@@ -25,12 +28,25 @@ function useMapClick(map, onPick) {
     };
   }, [map, onPick]);
 }
+const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5002";
+const API_BASE_URL = BASE_URL.endsWith("/api") 
+? BASE_URL
+ : `${BASE_URL}/api`;
 
 /* ======================================================
    SUPERVISOR – GEOFENCING PAGE
 ====================================================== */
 export default function GeofencingPage() {
+  
   const mapRef = useRef(null);
+ 
+ 
+const autoCenterRef = useRef(true);
+ 
+  const [selectedVehicle, setSelectedVehicle] = useState(null);
+  const [vehicleDetails, setVehicleDetails] = useState(null);
+  const [showPopup, setShowPopup] = useState(false);
+  const [mapError, setMapError] = useState('');
 
   /* ---------- STATE ---------- */
   const [companies, setCompanies] = useState([]);
@@ -38,11 +54,14 @@ export default function GeofencingPage() {
   const [radius, setRadius] = useState(500);
   const [point, setPoint] = useState(null);
   const [editingId, setEditingId] = useState(null);
-const API_BASE = 'http://localhost:5002';
+
 const [mapLayer, setMapLayer] = useState('standard');
 
 const [showAssign, setShowAssign] = useState(false);
 const [selectedGeofence, setSelectedGeofence] = useState(null);
+
+const vehicleMarkersRef = useRef({});
+const [liveVehicles, setLiveVehicles] = useState([]);
 
 const [vehicles, setVehicles] = useState([]);
 const [vehicleId, setVehicleId] = useState('');
@@ -53,21 +72,105 @@ const [graceMinutes, setGraceMinutes] = useState(10);
   /* ======================================================
      INIT MAP
   ====================================================== */
-  useEffect(() => {
-  if (!window.mappls || mapRef.current) return;
+useEffect(() => {
+  const initMap = () => {
+    if (!window.mappls || mapRef.current) return;
 
- const map = new window.mappls.Map('geofence-map', {
-  center: [28.61, 77.2],
-  zoom: 6,
-  layers: mapLayer,
-});
+    mapRef.current = new window.mappls.Map('geofence-map', {
+      center: [28.61, 77.2],
+      zoom: 6,
+    });
 
+    mapRef.current.addListener('dragstart', () => {
+      autoCenterRef.current = false;
+    });
 
-  mapRef.current = map;
+    mapRef.current.addListener('zoomstart', () => {
+      autoCenterRef.current = false;
+    });
+  };
 
-  // SAFE event binding
-  map.on('styleimagemissing', () => {});
+  const t = setTimeout(initMap, 10);
+  return () => clearTimeout(t);
 }, []);
+
+  /* =========================
+     FETCH VEHICLE DATA
+  ========================= */
+  useEffect(() => {
+  const load = async () => {
+    try {
+      const data = await getLatestTelemetry();
+      setLiveVehicles(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  load();
+  const i = setInterval(load, 2000);
+  return () => clearInterval(i);
+}, []);
+
+  
+  /* =========================
+     UPDATE MARKERS AND BOUNDS
+  ========================= */
+  useEffect(() => {
+  if (!mapRef.current || !window.mappls) return;
+
+  const seen = new Set();
+
+  liveVehicles.forEach(v => {
+    const lat = Number(v.lat);
+    const lng = Number(v.lng);
+
+    if (
+      isNaN(lat) || isNaN(lng) ||
+      lat < -90 || lat > 90 ||
+      lng < -180 || lng > 180
+    ) return;
+
+    seen.add(v.id);
+
+    let marker = vehicleMarkersRef.current[v.id];
+
+    if (!marker) {
+      marker = new window.mappls.Marker({
+        map: mapRef.current,
+        position: { lat, lng },
+        html: `
+          <div style="
+            width:14px;
+            height:14px;
+            border-radius:50%;
+            background:${
+              v.status === 'moving'
+                ? '#16a34a'
+                : v.status === 'idling'
+                ? '#f59e0b'
+                : '#dc2626'
+            };
+            border:2px solid white;
+            box-shadow:0 0 6px rgba(0,0,0,.4);
+            z-index:999;
+          "></div>
+        `,
+      });
+
+      vehicleMarkersRef.current[v.id] = marker;
+    } else {
+      marker.setPosition({ lat, lng });
+    }
+  });
+
+  Object.keys(vehicleMarkersRef.current).forEach(id => {
+    if (!seen.has(id)) {
+      vehicleMarkersRef.current[id].remove();
+      delete vehicleMarkersRef.current[id];
+    }
+  });
+}, [liveVehicles]);
 
   /* ======================================================
      MAPPLS AUTOSUGGEST (v3)
@@ -111,7 +214,7 @@ mapRef.current.setZoom(16);
      LOAD EXISTING GEOFENCES
   ====================================================== */
   const loadCompanies = async () => {
-    const res = await fetch(`${API_BASE}/api/companies`);
+    const res = await fetch(`${API_BASE_URL}/companies`);
     if (!res.ok) return;
     const data = await res.json();
     setCompanies(data);
@@ -124,7 +227,7 @@ mapRef.current.setZoom(16);
 
 
   const loadVehicles = async () => {
-  const res = await fetch(`${API_BASE}/api/vehicles`);
+  const res = await fetch(`${API_BASE_URL}/vehicles`);
   if (!res.ok) return;
   setVehicles(await res.json());
 };
@@ -136,44 +239,42 @@ const geofenceCirclesRef = useRef([]);
 useEffect(() => {
   if (!mapRef.current || !window.mappls) return;
 
-  // remove old circles
-  geofenceCirclesRef.current.forEach(obj => {
-  if (obj.circle) obj.circle.setMap(null);
-});
-  geofenceCirclesRef.current = [];
+  const drawCircles = () => {
+    // remove old circles
+    geofenceCirclesRef.current.forEach(o => o.circle?.setMap(null));
+    geofenceCirclesRef.current = [];
 
-  companies.forEach((c) => {
-    const m = c.center?.toString().match(/POINT\(([-\d.]+) ([-\d.]+)\)/);
-    if (!m) return;
+    companies.forEach(c => {
+      const m = c.center?.toString().match(/POINT\(([-\d.]+) ([-\d.]+)\)/);
+      if (!m) return;
 
-    const lat = Number(m[2]);
-    const lng = Number(m[1]);
+      const lng = Number(m[1]); // ✅ correct
+      const lat = Number(m[2]); // ✅ correct
 
-    const circle = new window.mappls.Circle({
-      map: mapRef.current,
-      center: [lat, lng],
-      radius: Number(c.radius_meters),
-      strokeColor: '#2563eb',
-      strokeOpacity: 1,
-      strokeWeight: 2,
-      fillColor: '#2563eb',
-      fillOpacity: 0.25,
+      const circle = new window.mappls.Circle({
+        map: mapRef.current,
+        center: [lat, lng],
+        radius: Number(c.radius_meters),
+        strokeColor: '#2563eb',
+        strokeWeight: 2,
+        fillColor: '#2563eb',
+        fillOpacity: 0.25,
+      });
+
+      window.mappls.Event.addListener(circle, 'click', () => {
+        mapRef.current.setCenter([lat, lng]);
+        mapRef.current.setZoom(zoomByRadius(c.radius_meters));
+      });
+
+      geofenceCirclesRef.current.push({ circle });
     });
+  };
 
-    // ✅ CLICK ON GEOFENCE → ZOOM
-    window.mappls.Event.addListener(circle, 'click', () => {
-  mapRef.current.setCenter([lat, lng]);
-  mapRef.current.setZoom(zoomByRadius(c.radius_meters));
-});
-
-    geofenceCirclesRef.current.push({
-      company_id: c.company_id,
-      circle,
-      lat,
-      lng,
-      radius: c.radius_meters,
-    });
-  });
+  if (mapRef.current.loaded && mapRef.current.loaded()) {
+    drawCircles();
+  } else {
+    mapRef.current.addListener('load', drawCircles);
+  }
 }, [companies]);
 
   /* ======================================================
@@ -194,8 +295,8 @@ useEffect(() => {
     };
 
     const url = editingId
-  ? `${API_BASE}/api/geofences/${editingId}`
-  : `${API_BASE}/api/companies`;
+  ? `${API_BASE_URL}/geofences/${editingId}`
+  : `${API_BASE_URL}/companies`;
 
     const method = editingId ? 'PUT' : 'POST';
 
@@ -215,10 +316,10 @@ useEffect(() => {
     setRadius(500);
     setPoint(null);
     setEditingId(null);
-    setShiftId('');
-    setExpectedTime('');
-    setShifts([]);
-    document.getElementById('searchBox').value = '';
+    
+  
+   
+    
 
     loadCompanies();
   };
@@ -236,9 +337,9 @@ useEffect(() => {
      UI
   ====================================================== */
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-gray-50">
       {/* MAP */}
-      <div className="flex-1">
+      <div className="flex-1 h-screen overflow-hidden">
         <div
   id="geofence-map"
   className="h-full w-full pointer-events-auto"
@@ -246,7 +347,7 @@ useEffect(() => {
       </div>
 
       {/* RIGHT PANEL */}
-      <div className="w-[520px] border-l bg-white p-6 overflow-y-auto relative z-50">
+      <div className="w-[520px] border-l bg-white p-6 overflow-y-auto h-screen relative z-50">
         <h1 className="text-lg font-semibold mb-6">Geofence Management</h1>
 
         {/* FORM */}
@@ -401,11 +502,12 @@ useEffect(() => {
     const next = mapLayer === 'standard' ? 'satellite' : 'standard';
     setMapLayer(next);
 
-    mapRef.current.setStyle(
-      next === 'satellite'
-        ? 'mappls://styles/mappls/satellite'
-        : 'mappls://styles/mappls/standard'
-    );
+    mapRef.current.setMapType(
+  next === 'satellite'
+    ? window.mappls.MapType.SATELLITE
+    : window.mappls.MapType.STANDARD
+);
+
   }}
   className="px-3 py-1 border rounded text-sm"
 >
@@ -473,7 +575,7 @@ useEffect(() => {
                 return;
               }
 
-              await fetch(`${API_BASE}/api/geofence-assignments`, {
+              await fetch(`${API_BASE_URL}/geofence-assignments`,{
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

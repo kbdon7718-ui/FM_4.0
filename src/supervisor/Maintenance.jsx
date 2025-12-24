@@ -595,7 +595,7 @@ export function Maintenance() {
                     recentEntries.map((entry) => (
                       <div key={entry.maintenance_id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
                         <div className="flex justify-between items-start mb-2">
-                          <div className="flex-1">
+                          <div className="flex-1 h-screen overflow-hidden">
                             <p className="font-semibold text-gray-800">{entry.vehicle_number}</p>
                             <p className="text-sm text-blue-600 capitalize font-medium">
                               {entry.maintenance_type} {entry.category && `- ${entry.category}`}

@@ -114,7 +114,7 @@ export function FuelEntry() {
      UI
   ===================================== */
   return (
-    <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+    <div className="h-full overflow-y-auto p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
       {/* LEFT CARD */}
       <div className="bg-white rounded-xl border p-6">
         <h2 className="text-xl font-semibold mb-6">

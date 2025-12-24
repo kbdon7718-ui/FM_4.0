@@ -13,6 +13,7 @@ export function LiveTracking() {
   const mapInstance = useRef(null);
   const markersRef = useRef([]);
   const mapInitialized = useRef(false);
+const autoCenterRef = useRef(true);
 
   const [vehicles, setVehicles] = useState([]);
   const [filteredVehicles, setFilteredVehicles] = useState([]);
@@ -25,34 +26,33 @@ export function LiveTracking() {
   /* =========================
      INIT MAP
   ========================= */
-  useEffect(() => {
-    const initMap = () => {
-      if (!window.mappls) {
-        setMapError('Mappls SDK not loaded. Please refresh the page.');
-        return;
-      }
+useEffect(() => {
+  const initMap = () => {
+    if (!window.mappls) {
+      setMapError('Mappls SDK not loaded. Please refresh the page.');
+      return;
+    }
 
-      if (mapInstance.current) return;
+    if (mapInstance.current) return;
 
-      try {
-        mapInstance.current = new window.mappls.Map('live-tracking-map', {
-          center: [20.5937, 78.9629], // Center of India
-          zoom: 5, // Lower zoom to allow bounds fitting to work
-        });
-        mapInitialized.current = true;
-        setMapError('');
-        console.log('Map initialized successfully');
-      } catch (error) {
-        console.error('Map initialization error:', error);
-        setMapError('Failed to initialize map: ' + error.message);
-      }
-    };
+    mapInstance.current = new window.mappls.Map('live-tracking-map', {
+      zoom: 5,
+    });
 
-    // Wait for DOM to be ready
-    const timer = setTimeout(initMap, 500);
+    mapInstance.current.addListener('dragstart', () => {
+      autoCenterRef.current = false;
+    });
 
-    return () => clearTimeout(timer);
-  }, []);
+    mapInstance.current.addListener('zoomstart', () => {
+      autoCenterRef.current = false;
+    });
+
+    mapInitialized.current = true;
+  };
+
+  const timer = setTimeout(initMap, 500);
+  return () => clearTimeout(timer);
+}, []);
 
   /* =========================
      FETCH VEHICLE DATA
@@ -69,7 +69,8 @@ export function LiveTracking() {
     };
 
     load();
-    const i = setInterval(load, 5000);
+    const i = setInterval(load, 2000);
+
     return () => clearInterval(i);
   }, []);
 
@@ -130,9 +131,21 @@ export function LiveTracking() {
         try {
           // Create marker with default styling first
           const marker = new window.mappls.Marker({
-            map: mapInstance.current,
-            position: { lat: v.lat, lng: v.lng },
-          });
+  map: mapInstance.current,
+  position: { lat: v.lat, lng: v.lng },
+  html: `
+    <div style="
+      width:18px;
+      height:18px;
+      border-radius:50%;
+      background:${v.status === 'moving' ? '#16a34a' : v.status === 'idling' ? '#f59e0b' : '#dc2626'};
+      box-shadow: 0 0 10px rgba(0,0,0,0.4);
+      border:2px solid white;
+    "></div>
+  `,
+  offset: [0, 0],
+});
+
 
           // Try to add popup with vehicle info
           const popupContent = `
@@ -255,7 +268,7 @@ export function LiveTracking() {
   useEffect(() => {
     if (selectedVehicle?.lat && selectedVehicle?.lng && mapInstance.current && mapInitialized.current) {
       try {
-        mapInstance.current.setCenter([selectedVehicle.lat, selectedVehicle.lng], 14);
+      //  mapInstance.current.setCenter([selectedVehicle.lat, selectedVehicle.lng], 14);
       } catch (error) {
         console.error('Error focusing on vehicle:', error);
       }
@@ -293,7 +306,7 @@ export function LiveTracking() {
   }, []);
 
   return (
-    <div className="h-full flex flex-col relative">
+    <div className="flex flex-col h-full overflow-hidden relative">
       {/* ================= STATUS DASHBOARD ================= */}
       <div className="bg-white border-b shadow-sm p-4">
         <div className="flex items-center justify-between">
@@ -310,6 +323,7 @@ export function LiveTracking() {
               >
                 All ({statusCounts.total})
               </button>
+              
               <button
                 onClick={() => setStatusFilter('moving')}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
@@ -349,9 +363,10 @@ export function LiveTracking() {
       </div>
 
       {/* ================= MAIN CONTENT ================= */}
-      <div className="flex-1 flex">
+      <div className="flex-1 flex overflow-hidden">
         {/* ================= MAP ================= */}
-        <div className="flex-1 relative">
+        <div className="flex flex-col min-h-0 flex-1 overflow-hidden">
+
           {mapError ? (
             <div className="h-full w-full flex items-center justify-center bg-gray-100">
               <div className="text-center">
