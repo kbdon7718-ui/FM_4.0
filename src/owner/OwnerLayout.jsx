@@ -124,7 +124,7 @@ export function OwnerLayout({ onLogout, user, theme, onThemeChange }) {
   const sidebarContent = (
     <aside
       className="flex w-full bg-sidebar text-sidebar-foreground flex-col min-h-0"
-      style={{ height: '100vh' }}
+      style={{ height: '100vh', backgroundColor: 'var(--sidebar)', color: 'var(--sidebar-foreground)' }}
     >
       <div className="p-4 sm:p-6 border-b border-sidebar-border">
         <div className="flex items-center gap-3">
@@ -241,6 +241,7 @@ export function OwnerLayout({ onLogout, user, theme, onThemeChange }) {
                 <SheetContent
                   side="left"
                   className="w-[18rem] max-w-[90vw] p-0 bg-sidebar text-sidebar-foreground border-sidebar-border"
+                  style={{ backgroundColor: 'var(--sidebar)', color: 'var(--sidebar-foreground)', borderColor: 'var(--sidebar-border)' }}
                 >
                   <SheetHeader className="sr-only">
                     <SheetTitle>Navigation</SheetTitle>
