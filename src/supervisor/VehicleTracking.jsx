@@ -13,9 +13,9 @@ const FALLBACK_VEHICLES = [
 ];
 
 const statusColor = {
-  moving: 'text-green-600 bg-green-50 border-green-100',
-  idling: 'text-amber-600 bg-amber-50 border-amber-100',
-  stopped: 'text-red-600 bg-red-50 border-red-100',
+  moving: 'text-success bg-success-muted border-success-muted',
+  idling: 'text-warning bg-warning-muted border-warning-muted',
+  stopped: 'text-destructive bg-destructive-muted border-destructive-muted',
 };
 
 function mapTelemetryPayload(payload = []) {
@@ -90,17 +90,17 @@ export function VehicleTracking() {
           {/* Header */}
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div className="min-w-0">
-              <h2 className="text-xl font-semibold tracking-tight text-slate-900 truncate">
+              <h2 className="text-lg sm:text-xl font-semibold tracking-tight text-foreground truncate">
                 Live Fleet Tracking
               </h2>
-              <p className="text-sm text-slate-500">
+              <p className="text-sm text-muted-foreground">
                 Location, speed, and status in real time
               </p>
             </div>
 
             <div className="flex flex-wrap items-center gap-2 justify-start sm:justify-end">
-              <div className="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 h-11 text-xs text-slate-600">
-                <Clock3 className="h-4 w-4 text-slate-500" />
+              <div className="inline-flex items-center gap-2 rounded-md border border-border bg-card px-3 h-11 text-xs text-muted-foreground">
+                <Clock3 className="h-4 w-4 text-muted-foreground" />
                 <span className="tabular-nums">
                   {lastUpdated ? lastUpdated.toLocaleTimeString() : 'Updating...'}
                 </span>
@@ -128,29 +128,29 @@ export function VehicleTracking() {
             />
 
             {/* Legend */}
-            <div className="absolute bottom-3 left-3 sm:bottom-4 sm:left-4 z-20 bg-white/95 backdrop-blur-sm px-4 py-3 rounded-lg shadow-lg border border-slate-200">
-              <p className="text-sm font-medium text-slate-900 mb-2 flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-emerald-600" />
+            <div className="absolute bottom-3 left-3 sm:bottom-4 sm:left-4 z-20 bg-card/95 backdrop-blur-sm px-4 py-3 rounded-lg shadow-lg border border-border">
+              <p className="text-sm font-medium text-foreground mb-2 flex items-center gap-2">
+                <MapPin className="h-4 w-4 text-success" />
                 Status
               </p>
-              <div className="flex flex-wrap items-center gap-3 text-xs text-slate-700">
+              <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
                 <div className="flex items-center gap-2">
-                  <span className="h-3 w-3 rounded-full bg-green-500" />
+                  <span className="h-3 w-3 rounded-full bg-success" />
                   <span className="tabular-nums">Moving ({summary.moving})</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="h-3 w-3 rounded-full bg-amber-500" />
+                  <span className="h-3 w-3 rounded-full bg-warning" />
                   <span className="tabular-nums">Idle ({summary.idling})</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="h-3 w-3 rounded-full bg-red-500" />
+                  <span className="h-3 w-3 rounded-full bg-destructive" />
                   <span className="tabular-nums">Stopped ({summary.stopped})</span>
                 </div>
               </div>
             </div>
 
             {error && (
-              <div className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 z-20 bg-amber-50 border border-amber-200 text-amber-900 text-sm px-4 py-3 rounded-lg shadow max-w-[18rem]">
+              <div className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 z-20 bg-warning-muted border border-warning-muted text-foreground text-sm px-4 py-3 rounded-lg shadow max-w-[18rem]">
                 {error}
               </div>
             )}
@@ -158,12 +158,12 @@ export function VehicleTracking() {
         </div>
 
         {/* Right rail */}
-        <aside className="w-full lg:w-80 lg:shrink-0 min-h-0 rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-          <div className="p-4 border-b border-slate-200 bg-slate-50/80 backdrop-blur sticky top-0 z-10">
-            <p className="text-sm font-medium uppercase tracking-wide text-slate-500">Vehicles</p>
+        <aside className="w-full lg:w-80 lg:shrink-0 min-h-0 rounded-xl border border-border bg-card shadow-sm overflow-hidden">
+          <div className="p-4 border-b border-border bg-muted/30 backdrop-blur sticky top-0 z-10">
+            <p className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Vehicles</p>
             <div className="mt-1 flex items-end justify-between gap-3">
-              <p className="text-2xl font-bold tracking-tight text-slate-900 tabular-nums flex items-center gap-2">
-                <Activity className="h-5 w-5 text-emerald-600" />
+              <p className="text-2xl font-bold tracking-tight text-foreground tabular-nums flex items-center gap-2">
+                <Activity className="h-5 w-5 text-success" />
                 {summary.total}
               </p>
               <Button
@@ -178,7 +178,7 @@ export function VehicleTracking() {
             </div>
           </div>
 
-          <div className="lg:h-[60svh] lg:min-h-[360px] lg:max-h-[650px] overflow-y-auto">
+          <div className="lg:h-[72svh] lg:min-h-[360px] lg:max-h-[820px] overflow-y-auto">
             <div className="space-y-3 p-4">
               {vehicles.map((vehicle) => (
                 <button
@@ -187,24 +187,24 @@ export function VehicleTracking() {
                   onClick={() => setSelectedVehicleId(vehicle.id)}
                   className={`w-full text-left p-3 rounded-lg border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ${
                     selectedVehicleId === vehicle.id
-                      ? 'border-emerald-200 bg-emerald-50'
-                      : 'border-slate-200 bg-white hover:bg-slate-50'
+                      ? 'border-success-muted bg-success-muted'
+                      : 'border-border bg-card hover:bg-accent'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold text-slate-900 truncate">{vehicle.number}</p>
-                      <p className="text-[11px] text-slate-500 truncate">{vehicle.address || 'No address'}</p>
+                      <p className="text-sm font-semibold text-foreground truncate">{vehicle.number}</p>
+                      <p className="text-[11px] text-muted-foreground truncate">{vehicle.address || 'No address'}</p>
                     </div>
-                    <Navigation className="h-4 w-4 text-emerald-600 shrink-0" />
+                    <Navigation className="h-4 w-4 text-success shrink-0" />
                   </div>
-                  <div className="flex items-center justify-between mt-2 text-xs text-slate-600 gap-3">
+                  <div className="flex items-center justify-between mt-2 text-xs text-muted-foreground gap-3">
                     <span className={`px-2 py-1 rounded-full border capitalize ${statusColor[vehicle.status] || statusColor.stopped}`}>
                       {vehicle.statusText || vehicle.status}
                     </span>
                     <span className="tabular-nums">{vehicle.speed || 0} km/h</span>
                   </div>
-                  <div className="text-[11px] text-slate-400 mt-1 truncate">Updated {vehicle.lastUpdated}</div>
+                  <div className="text-[11px] text-muted-foreground/70 mt-1 truncate">Updated {vehicle.lastUpdated}</div>
                 </button>
               ))}
             </div>

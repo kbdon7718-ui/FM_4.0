@@ -78,7 +78,7 @@ export default function VehicleMap({ vehicles = [] }) {
   return (
     <div
       id="vehicle-map"
-      className="w-full h-[60svh] min-h-[360px] max-h-[650px] rounded-lg overflow-hidden border border-slate-200 bg-white"
+      className="w-full h-[60svh] min-h-[360px] sm:h-[65svh] lg:h-[72svh] max-h-[820px] rounded-xl overflow-hidden border border-border bg-card"
     />
   );
 }

@@ -161,7 +161,7 @@ export function OwnerLayout({ onLogout, user, theme, onThemeChange }) {
         <Button
           onClick={onLogout}
           variant="ghost"
-          className="w-full justify-start text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+          className="w-full justify-start text-destructive hover:bg-destructive/10 hover:text-destructive"
         >
           <LogOut className="h-4 w-4 mr-2" />
           Logout
@@ -179,7 +179,7 @@ export function OwnerLayout({ onLogout, user, theme, onThemeChange }) {
 
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur">
-          <div className="flex h-14 items-center justify-between gap-3 px-4 sm:px-6">
+          <div className="flex h-14 md:h-16 items-center justify-between gap-3 px-4 sm:px-6">
             <div className="flex items-center gap-3 min-w-0">
               <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
                 <SheetTrigger asChild>
@@ -237,7 +237,7 @@ export function OwnerLayout({ onLogout, user, theme, onThemeChange }) {
               <Button
                 onClick={onLogout}
                 variant="outline"
-                className="h-11"
+                className="h-11 border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
               >
                 <LogOut className="h-4 w-4 mr-2" />
                 Logout

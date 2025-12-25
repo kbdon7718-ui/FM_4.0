@@ -337,46 +337,46 @@ useEffect(() => {
      UI
   ====================================================== */
   return (
-    <div className="flex flex-col lg:flex-row min-h-[70svh] bg-slate-50">
+    <div className="flex flex-col lg:flex-row min-h-[70svh] bg-background">
       {/* MAP */}
       <div className="flex-1 min-w-0">
-        <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+        <div className="overflow-hidden rounded-xl border border-border bg-card">
           <div
             id="geofence-map"
-            className="w-full h-[55svh] min-h-[320px] sm:h-[60svh] lg:h-[70svh] pointer-events-auto"
+            className="w-full h-[60svh] min-h-[360px] sm:h-[65svh] lg:h-[72svh] max-h-[820px] pointer-events-auto"
           />
         </div>
       </div>
 
       {/* RIGHT PANEL */}
-      <div className="w-full lg:w-[520px] lg:shrink-0 mt-4 lg:mt-0 lg:ml-4 border border-slate-200 bg-white p-4 sm:p-6 overflow-y-auto lg:h-[70svh] rounded-lg relative z-10">
-        <h1 className="text-lg font-semibold mb-6">Geofence Management</h1>
+      <div className="w-full lg:w-[520px] lg:shrink-0 mt-4 lg:mt-0 lg:ml-4 border border-border bg-card p-4 sm:p-6 overflow-y-auto lg:h-[72svh] lg:max-h-[820px] rounded-xl relative z-10">
+        <h1 className="text-lg font-semibold mb-6 text-foreground">Geofence Management</h1>
 
         {/* FORM */}
-        <div className="border rounded-lg p-5 mb-6">
-          <h2 className="font-semibold mb-4">
+        <div className="border border-border rounded-lg p-5 mb-6 bg-muted/10">
+          <h2 className="font-semibold mb-4 text-foreground">
             {editingId ? '✏️ Edit Geofence' : '📍 Create Geofence'}
           </h2>
 
           <div className="space-y-4">
             <input
               id="searchBox"
-              className="w-full h-11 rounded-md border border-slate-300 bg-white px-3 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+              className="w-full h-11 rounded-md border border-input bg-background px-3 text-sm shadow-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               placeholder="Search company address"
               value={companyName}
               onChange={(e) => setCompanyName(e.target.value)}
             />
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="h-11 rounded-md border border-slate-200 bg-slate-50 px-3 text-sm flex items-center justify-between">
-                <span className="text-slate-500">Lat</span>
-                <span className="font-medium text-slate-900 tabular-nums">
+              <div className="h-11 rounded-md border border-border bg-muted/30 px-3 text-sm flex items-center justify-between">
+                <span className="text-muted-foreground">Lat</span>
+                <span className="font-medium text-foreground tabular-nums">
                   {point?.lat != null ? Number(point.lat).toFixed(6) : '--'}
                 </span>
               </div>
-              <div className="h-11 rounded-md border border-slate-200 bg-slate-50 px-3 text-sm flex items-center justify-between">
-                <span className="text-slate-500">Lng</span>
-                <span className="font-medium text-slate-900 tabular-nums">
+              <div className="h-11 rounded-md border border-border bg-muted/30 px-3 text-sm flex items-center justify-between">
+                <span className="text-muted-foreground">Lng</span>
+                <span className="font-medium text-foreground tabular-nums">
                   {point?.lng != null ? Number(point.lng).toFixed(6) : '--'}
                 </span>
               </div>
@@ -384,7 +384,7 @@ useEffect(() => {
 
             <input
               type="number"
-              className="w-full h-11 rounded-md border border-slate-300 bg-white px-3 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+              className="w-full h-11 rounded-md border border-input bg-background px-3 text-sm shadow-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               placeholder="Radius (meters)"
               value={radius}
               onChange={(e) => setRadius(+e.target.value)}
@@ -392,7 +392,7 @@ useEffect(() => {
 
             <button
               onClick={saveGeofence}
-              className="w-full h-11 rounded-md bg-blue-600 text-white text-sm font-semibold shadow-sm hover:bg-blue-700 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+              className="w-full h-11 rounded-md bg-primary text-primary-foreground text-sm font-semibold shadow-sm hover:bg-primary/90 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               {editingId ? 'Update Geofence' : 'Create Geofence'}
             </button>
@@ -400,7 +400,7 @@ useEffect(() => {
         </div>
 
         {/* LIST */}
-        <h2 className="font-semibold mb-3">Geofences</h2>
+        <h2 className="font-semibold mb-3 text-foreground">Geofences</h2>
 
         {companies.map((c) => {
           const m = c.center
@@ -410,17 +410,17 @@ useEffect(() => {
           return (
             <div
               key={c.company_id}
-              className="border border-slate-200 rounded-lg p-4 mb-3 bg-slate-50"
+              className="border border-border rounded-lg p-4 mb-3 bg-muted/20"
             >
               <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                 <div>
-                  <div className="font-semibold">{c.company_name}</div>
+                  <div className="font-semibold text-foreground">{c.company_name}</div>
                   {m && (
-                    <div className="text-sm text-gray-600">
+                    <div className="text-sm text-muted-foreground">
                       {m[2]}, {m[1]}
                     </div>
                   )}
-                  <div className="text-sm text-gray-600">
+                  <div className="text-sm text-muted-foreground">
                     Radius: {c.radius_meters}m
                   </div>
                 </div>
@@ -443,14 +443,14 @@ useEffect(() => {
 
                       
                     }}
-                    className="inline-flex items-center justify-center h-11 w-11 rounded-md border border-slate-200 bg-white text-blue-700 hover:bg-slate-100 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                    className="inline-flex items-center justify-center h-11 w-11 rounded-md border border-border bg-card text-info hover:bg-accent transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                   >
                     ✏️
                   </button>
 
                   <button
                     onClick={() => deleteGeofence(c.company_id)}
-                    className="inline-flex items-center justify-center h-11 w-11 rounded-md border border-slate-200 bg-white text-red-700 hover:bg-slate-100 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
+                    className="inline-flex items-center justify-center h-11 w-11 rounded-md border border-border bg-card text-destructive hover:bg-destructive/10 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                   >
                     🗑️
                   </button>
@@ -459,7 +459,7 @@ useEffect(() => {
     setSelectedGeofence(c);
     setShowAssign(true);
   }}
-  className="inline-flex items-center justify-center h-11 w-11 rounded-md border border-slate-200 bg-white text-emerald-700 hover:bg-slate-100 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
+  className="inline-flex items-center justify-center h-11 w-11 rounded-md border border-border bg-card text-success hover:bg-accent transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
 >
   ➕
 </button>
@@ -475,7 +475,7 @@ useEffect(() => {
 );
 
   }}
-  className="inline-flex items-center justify-center h-11 px-4 rounded-md border border-slate-200 bg-white text-sm font-medium text-slate-800 hover:bg-slate-100 transition whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+  className="inline-flex items-center justify-center h-11 px-4 rounded-md border border-border bg-card text-sm font-medium text-foreground hover:bg-accent transition whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
 >
   🛰️ {mapLayer === 'standard' ? 'Satellite' : 'Standard'}
 </button>
@@ -488,16 +488,16 @@ useEffect(() => {
         })}
       </div>
 {showAssign && (
-  <div className="fixed inset-0 bg-black/50 z-50 p-4 overflow-y-auto">
-    <div className="mx-auto my-8 bg-white w-full max-w-md rounded-lg p-4 sm:p-6 shadow-xl max-h-[90svh] overflow-y-auto">
-      <h2 className="text-lg font-semibold mb-4">
+  <div className="fixed inset-0 bg-black/50 z-50 p-4 overflow-y-auto" role="dialog" aria-modal="true" aria-label="Assign vehicle to geofence">
+    <div className="mx-auto my-8 bg-card w-full max-w-md rounded-xl border border-border p-4 sm:p-6 shadow-xl max-h-[90svh] overflow-y-auto">
+      <h2 className="text-lg font-semibold mb-4 text-foreground">
         Assign Vehicle to Geofence
       </h2>
 
       <div className="space-y-4">
         {/* VEHICLE */}
         <select
-          className="w-full h-11 rounded-md border border-slate-300 bg-white px-3 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+          className="w-full h-11 rounded-md border border-input bg-background px-3 text-sm shadow-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           value={vehicleId}
           onChange={(e) => setVehicleId(e.target.value)}
         >
@@ -512,7 +512,7 @@ useEffect(() => {
         {/* EXPECTED TIME */}
         <input
           type="time"
-          className="w-full h-11 rounded-md border border-slate-300 bg-white px-3 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+          className="w-full h-11 rounded-md border border-input bg-background px-3 text-sm shadow-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           value={expectedTime}
           onChange={(e) => setExpectedTime(e.target.value)}
         />
@@ -520,7 +520,7 @@ useEffect(() => {
         {/* GRACE */}
         <input
           type="number"
-          className="w-full h-11 rounded-md border border-slate-300 bg-white px-3 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+          className="w-full h-11 rounded-md border border-input bg-background px-3 text-sm shadow-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           placeholder="Grace minutes"
           value={graceMinutes}
           onChange={(e) => setGraceMinutes(+e.target.value)}
@@ -529,7 +529,7 @@ useEffect(() => {
         <div className="flex justify-end gap-3">
           <button
             onClick={() => setShowAssign(false)}
-            className="h-11 px-4 rounded-md border border-slate-300 bg-white text-sm font-medium hover:bg-slate-100 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+            className="h-11 px-4 rounded-md border border-border bg-card text-sm font-medium text-foreground hover:bg-accent transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             Cancel
           </button>
@@ -558,7 +558,7 @@ useEffect(() => {
               setExpectedTime('');
               setGraceMinutes(10);
             }}
-            className="h-11 px-4 rounded-md bg-blue-600 text-white text-sm font-semibold shadow-sm hover:bg-blue-700 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+            className="h-11 px-4 rounded-md bg-primary text-primary-foreground text-sm font-semibold shadow-sm hover:bg-primary/90 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             Save
           </button>

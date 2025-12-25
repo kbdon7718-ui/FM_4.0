@@ -69,8 +69,8 @@ export function LoginPage({ onLogin }) {
   };
 
   return (
-    <div className="min-h-svh flex items-center justify-center bg-background px-4 py-8">
-      <Card className="w-full max-w-md border-border bg-card shadow-lg">
+    <div className="min-h-svh grid place-items-center bg-background px-4 py-6">
+      <Card className="w-full max-w-md border-border bg-card shadow-lg max-h-[calc(100svh-3rem)] overflow-auto">
         <CardHeader className="text-center space-y-3">
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-xl bg-sidebar-primary text-sidebar-primary-foreground shadow">
             <Truck className="h-7 w-7" />

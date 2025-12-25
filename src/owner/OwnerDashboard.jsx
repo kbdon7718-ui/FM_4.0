@@ -20,7 +20,7 @@ export default function OwnerDashboard() {
 
   if (loading) {
     return (
-      <div className="text-slate-500">
+      <div className="text-muted-foreground">
         Loading dashboard…
       </div>
     );
@@ -45,11 +45,11 @@ export default function OwnerDashboard() {
       </div>
 
       {/* INFO SECTION */}
-      <div className="p-6 rounded-xl border border-slate-200 bg-white">
+      <div className="p-5 sm:p-6 rounded-xl border border-border bg-card">
         <h3 className="font-semibold mb-2">
           Operational Summary
         </h3>
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-muted-foreground">
           This dashboard shows live operational performance based on
           actual vehicle GPS and geofence events.
         </p>
@@ -66,16 +66,16 @@ function KPI({ title, value, icon: Icon, success }) {
     <div
       className={`p-5 rounded-2xl border ${
         success
-          ? 'border-emerald-200 bg-emerald-50'
-          : 'border-slate-200 bg-white'
+          ? 'border-success-muted bg-success-muted'
+          : 'border-border bg-card'
       }`}
     >
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm font-medium text-slate-600">
+          <p className="text-sm font-medium text-muted-foreground">
             {title}
           </p>
-          <p className="text-3xl font-bold text-slate-900 mt-1">
+          <p className="text-3xl font-bold text-foreground mt-1">
             {value}
           </p>
         </div>
@@ -83,8 +83,8 @@ function KPI({ title, value, icon: Icon, success }) {
         <div
           className={`h-12 w-12 flex items-center justify-center rounded-xl ${
             success
-              ? 'bg-emerald-200 text-emerald-700'
-              : 'bg-slate-100 text-slate-700'
+              ? 'bg-success-muted text-success'
+              : 'bg-muted/40 text-muted-foreground'
           }`}
         >
           <Icon className="h-6 w-6" />

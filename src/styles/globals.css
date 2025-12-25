@@ -249,4 +249,32 @@ html {
   .border-info {
     border-color: var(--info);
   }
+
+  .bg-success-muted {
+    background-color: color-mix(in oklab, var(--success) 16%, transparent);
+  }
+  .border-success-muted {
+    border-color: color-mix(in oklab, var(--success) 40%, var(--border));
+  }
+
+  .bg-warning-muted {
+    background-color: color-mix(in oklab, var(--warning) 18%, transparent);
+  }
+  .border-warning-muted {
+    border-color: color-mix(in oklab, var(--warning) 45%, var(--border));
+  }
+
+  .bg-info-muted {
+    background-color: color-mix(in oklab, var(--info) 16%, transparent);
+  }
+  .border-info-muted {
+    border-color: color-mix(in oklab, var(--info) 40%, var(--border));
+  }
+
+  .bg-destructive-muted {
+    background-color: color-mix(in oklab, var(--destructive) 14%, transparent);
+  }
+  .border-destructive-muted {
+    border-color: color-mix(in oklab, var(--destructive) 38%, var(--border));
+  }
 }
