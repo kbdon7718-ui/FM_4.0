@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   LayoutDashboard,
   Truck,
@@ -48,6 +48,30 @@ import { Companyroutesmanagemnt } from './Companyroutesmanagemnt.jsx';
 export function SupervisorLayout({ onLogout, user, theme, onThemeChange }) {
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    if (typeof window.matchMedia !== 'function') return window.innerWidth >= 1024;
+    return window.matchMedia('(min-width: 1024px)').matches;
+  });
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
+
+    const mql = window.matchMedia('(min-width: 1024px)');
+    const onChange = (e) => {
+      setIsDesktop(e.matches);
+      if (e.matches) setMobileOpen(false);
+    };
+
+    setIsDesktop(mql.matches);
+    if (typeof mql.addEventListener === 'function') mql.addEventListener('change', onChange);
+    else mql.addListener(onChange);
+
+    return () => {
+      if (typeof mql.removeEventListener === 'function') mql.removeEventListener('change', onChange);
+      else mql.removeListener(onChange);
+    };
+  }, []);
 
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -91,8 +115,16 @@ export function SupervisorLayout({ onLogout, user, theme, onThemeChange }) {
     setMobileOpen(false);
   };
 
+  const isWidePage =
+    currentPage === 'dashboard' ||
+    currentPage === 'live-tracking' ||
+    currentPage === 'geofencing';
+
   const sidebarContent = (
-    <aside className="flex w-full bg-sidebar text-sidebar-foreground flex-col min-h-0">
+    <aside
+      className="flex w-full bg-sidebar text-sidebar-foreground flex-col min-h-0"
+      style={{ height: '100vh' }}
+    >
       <div className="p-4 sm:p-6 border-b border-sidebar-border">
         <div className="flex items-center gap-3">
           <div className="bg-sidebar-primary text-sidebar-primary-foreground p-2 rounded-lg">
@@ -161,37 +193,47 @@ export function SupervisorLayout({ onLogout, user, theme, onThemeChange }) {
   );
 
   return (
-    <div className="flex min-h-svh bg-background overflow-hidden">
-      <div className="hidden lg:flex w-72 shrink-0 min-h-0 lg:sticky lg:top-0 lg:h-svh">
-        {sidebarContent}
-      </div>
+    <div className="bg-background" style={{ minHeight: '100vh' }}>
+      {/* ================= DESKTOP SIDEBAR (FIXED) ================= */}
+      {isDesktop && (
+        <div
+          style={{ position: 'fixed', inset: 0, right: 'auto', width: 288, height: '100vh', zIndex: 40 }}
+        >
+          {sidebarContent}
+        </div>
+      )}
 
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div
+        className="flex min-w-0 flex-col"
+        style={{ minHeight: '100vh', paddingLeft: isDesktop ? 288 : 0 }}
+      >
         <header className="sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur">
           <div className="flex h-14 md:h-16 items-center justify-between gap-3 px-4 sm:px-6">
             <div className="flex items-center gap-3 min-w-0">
-              <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-                <SheetTrigger asChild>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    className="h-11 w-11 lg:hidden"
-                    aria-label="Open navigation"
+              {!isDesktop && (
+                <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+                  <SheetTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      className="h-11 w-11"
+                      aria-label="Open navigation"
+                    >
+                      <Menu className="h-5 w-5" />
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="left"
+                    className="w-[18rem] max-w-[90vw] p-0 bg-sidebar text-sidebar-foreground border-sidebar-border"
                   >
-                    <Menu className="h-5 w-5" />
-                  </Button>
-                </SheetTrigger>
-                <SheetContent
-                  side="left"
-                  className="w-[18rem] max-w-[90vw] p-0 bg-sidebar text-sidebar-foreground border-sidebar-border"
-                >
-                  <SheetHeader className="sr-only">
-                    <SheetTitle>Navigation</SheetTitle>
-                  </SheetHeader>
-                  {sidebarContent}
-                </SheetContent>
-              </Sheet>
+                    <SheetHeader className="sr-only">
+                      <SheetTitle>Navigation</SheetTitle>
+                    </SheetHeader>
+                    {sidebarContent}
+                  </SheetContent>
+                </Sheet>
+              )}
 
               <button
                 type="button"
@@ -225,8 +267,8 @@ export function SupervisorLayout({ onLogout, user, theme, onThemeChange }) {
               </div>
               <Button
                 onClick={onLogout}
-                variant="outline"
-                className="h-11 border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                variant="destructive"
+                className="h-11"
               >
                 <LogOut className="h-4 w-4 mr-2" />
                 Logout
@@ -235,12 +277,20 @@ export function SupervisorLayout({ onLogout, user, theme, onThemeChange }) {
           </div>
         </header>
 
-        <main className="flex-1 min-h-0 overflow-auto bg-background p-3 sm:p-4 lg:p-6">
-          <div className="mx-auto w-full max-w-7xl">
-            <div className="rounded-xl border border-border bg-card p-4 sm:p-5">
+        <main className="flex-1 min-h-0 overflow-auto bg-background">
+          {isWidePage ? (
+            <div className="p-3 sm:p-4">
               {renderPage()}
             </div>
-          </div>
+          ) : (
+            <div className="p-3 sm:p-4 lg:p-6">
+              <div className="mx-auto w-full max-w-7xl">
+                <div className="rounded-xl border border-border bg-card p-4 sm:p-5">
+                  {renderPage()}
+                </div>
+              </div>
+            </div>
+          )}
         </main>
       </div>
     </div>

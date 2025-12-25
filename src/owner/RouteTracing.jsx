@@ -50,6 +50,11 @@ export function RouteTracing() {
         });
         mapInitialized.current = true;
         setMapError('');
+        setTimeout(() => {
+          try {
+            mapInstance.current?.resize?.();
+          } catch {}
+        }, 0);
         console.log('Route tracing map initialized successfully');
       } catch (error) {
         console.error('Route tracing map initialization error:', error);
@@ -549,6 +554,7 @@ export function RouteTracing() {
           id="route-tracing-map"
           ref={mapRef}
           className="w-full h-[60svh] min-h-[360px] sm:h-[65svh] lg:h-[72svh] max-h-[820px]"
+          style={{ height: '65vh', minHeight: 420, maxHeight: 900 }}
         />
       </div>
 

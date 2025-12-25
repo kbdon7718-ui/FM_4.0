@@ -50,6 +50,12 @@ useEffect(() => {
     });
 
     mapInitialized.current = true;
+
+    setTimeout(() => {
+      try {
+        mapInstance.current?.resize?.();
+      } catch {}
+    }, 0);
   };
 
   const timer = setTimeout(initMap, 500);
@@ -415,7 +421,10 @@ useEffect(() => {
         <section className="relative flex flex-col min-h-0 flex-1">
           <div className="relative rounded-xl border border-border bg-card overflow-hidden">
             {mapError ? (
-              <div className="w-full h-[60svh] min-h-[360px] sm:h-[65svh] lg:h-[72svh] max-h-[820px] flex items-center justify-center bg-muted/30">
+              <div
+                className="w-full h-[60svh] min-h-[360px] sm:h-[65svh] lg:h-[72svh] max-h-[820px] flex items-center justify-center bg-muted/30"
+                style={{ height: '65vh', minHeight: 420, maxHeight: 900 }}
+              >
                 <div className="text-center px-6">
                   <div className="text-destructive text-base font-semibold mb-2">Map Error</div>
                   <div className="text-sm text-muted-foreground mb-4">{mapError}</div>
@@ -433,6 +442,7 @@ useEffect(() => {
                 ref={mapRef}
                 id="live-tracking-map"
                 className="w-full h-[60svh] min-h-[360px] sm:h-[65svh] lg:h-[72svh] max-h-[820px]"
+                style={{ height: '65vh', minHeight: 420, maxHeight: 900 }}
               />
             )}
 

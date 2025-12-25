@@ -69,8 +69,14 @@ export function LoginPage({ onLogin }) {
   };
 
   return (
-    <div className="min-h-svh grid place-items-center bg-background px-4 py-6">
-      <Card className="w-full max-w-md border-border bg-card shadow-lg max-h-[calc(100svh-3rem)] overflow-auto">
+    <div
+      className="bg-background px-4"
+      style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+    >
+      <Card
+        className="w-full max-w-md border-border bg-card shadow-lg overflow-auto"
+        style={{ maxHeight: 'calc(100vh - 2rem)' }}
+      >
         <CardHeader className="text-center space-y-3">
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-xl bg-sidebar-primary text-sidebar-primary-foreground shadow">
             <Truck className="h-7 w-7" />

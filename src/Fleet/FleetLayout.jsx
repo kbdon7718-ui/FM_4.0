@@ -31,10 +31,34 @@ const API_BASE_URL = BASE_URL.endsWith('/api')
 export default function FleetLayout({ onLogout, user, theme, onThemeChange }) {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    if (typeof window.matchMedia !== 'function') return window.innerWidth >= 1024;
+    return window.matchMedia('(min-width: 1024px)').matches;
+  });
   const [vehicle, setVehicle] = useState(null);
   const [distance, setDistance] = useState(0);
   const [distanceLoading, setDistanceLoading] = useState(false);
   const [distanceError, setDistanceError] = useState('');
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
+
+    const mql = window.matchMedia('(min-width: 1024px)');
+    const onChange = (e) => {
+      setIsDesktop(e.matches);
+      if (e.matches) setMobileNavOpen(false);
+    };
+
+    setIsDesktop(mql.matches);
+    if (typeof mql.addEventListener === 'function') mql.addEventListener('change', onChange);
+    else mql.addListener(onChange);
+
+    return () => {
+      if (typeof mql.removeEventListener === 'function') mql.removeEventListener('change', onChange);
+      else mql.removeListener(onChange);
+    };
+  }, []);
 
 
   /* =========================
@@ -117,8 +141,13 @@ useEffect(() => {
     setMobileNavOpen(false);
   };
 
+  const isWidePage = activeTab === 'location';
+
   const sidebarContent = (
-    <aside className="flex w-full bg-sidebar text-sidebar-foreground flex-col min-h-0">
+    <aside
+      className="flex w-full bg-sidebar text-sidebar-foreground flex-col min-h-0"
+      style={{ height: '100vh' }}
+    >
       <div className="p-4 sm:p-6 border-b border-sidebar-border">
         <div className="flex items-center gap-3">
           <div className="bg-sidebar-primary text-sidebar-primary-foreground p-2 rounded-lg">
@@ -178,37 +207,42 @@ useEffect(() => {
   );
 
   return (
-    <div className="flex min-h-svh bg-background overflow-hidden">
-      <div className="hidden lg:flex w-72 shrink-0 min-h-0 lg:sticky lg:top-0 lg:h-svh">
-        {sidebarContent}
-      </div>
+    <div className="bg-background" style={{ minHeight: '100vh' }}>
+      {/* ================= DESKTOP SIDEBAR (FIXED) ================= */}
+      {isDesktop && (
+        <div style={{ position: 'fixed', inset: 0, right: 'auto', width: 288, height: '100vh', zIndex: 40 }}>
+          {sidebarContent}
+        </div>
+      )}
 
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-w-0 flex-col" style={{ minHeight: '100vh', paddingLeft: isDesktop ? 288 : 0 }}>
         <header className="sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur">
           <div className="flex h-14 md:h-16 items-center justify-between gap-3 px-4 sm:px-6">
             <div className="flex items-center gap-3 min-w-0">
-              <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
-                <SheetTrigger asChild>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    className="h-11 w-11 lg:hidden"
-                    aria-label="Open navigation"
+              {!isDesktop && (
+                <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
+                  <SheetTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      className="h-11 w-11"
+                      aria-label="Open navigation"
+                    >
+                      <Menu className="h-5 w-5" />
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="left"
+                    className="w-[18rem] max-w-[90vw] p-0 bg-sidebar text-sidebar-foreground border-sidebar-border"
                   >
-                    <Menu className="h-5 w-5" />
-                  </Button>
-                </SheetTrigger>
-                <SheetContent
-                  side="left"
-                  className="w-[18rem] max-w-[90vw] p-0 bg-sidebar text-sidebar-foreground border-sidebar-border"
-                >
-                  <SheetHeader className="sr-only">
-                    <SheetTitle>Navigation</SheetTitle>
-                  </SheetHeader>
-                  {sidebarContent}
-                </SheetContent>
-              </Sheet>
+                    <SheetHeader className="sr-only">
+                      <SheetTitle>Navigation</SheetTitle>
+                    </SheetHeader>
+                    {sidebarContent}
+                  </SheetContent>
+                </Sheet>
+              )}
 
               <button
                 type="button"
@@ -242,8 +276,8 @@ useEffect(() => {
               </div>
               <Button
                 onClick={onLogout}
-                variant="outline"
-                className="h-11 border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                variant="destructive"
+                className="h-11"
               >
                 <LogOut className="h-4 w-4 mr-2" />
                 Logout
@@ -252,11 +286,27 @@ useEffect(() => {
           </div>
         </header>
 
-        <main className="flex-1 min-h-0 overflow-auto bg-background p-3 sm:p-4 lg:p-6">
-          <div className="mx-auto w-full max-w-7xl">
-            <div className="rounded-xl border border-border bg-card p-4 sm:p-5">
-              {activeTab === 'dashboard' && (
-                <div className="max-w-md mx-auto text-center mt-10 sm:mt-16 space-y-4">
+        <main className="flex-1 min-h-0 overflow-auto bg-background">
+          {isWidePage ? (
+            <div className="p-3 sm:p-4">
+              {activeTab === 'location' && vehicle && (
+                <div className="w-full">
+                  <FleetMap user={{ vehicle_id: vehicle.vehicle_id }} />
+                </div>
+              )}
+
+              {activeTab === 'location' && !vehicle && (
+                <div className="text-center text-muted-foreground mt-10 sm:mt-16">
+                  Please assign a vehicle in Settings first
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="p-3 sm:p-4 lg:p-6">
+              <div className="mx-auto w-full max-w-7xl">
+                <div className="rounded-xl border border-border bg-card p-4 sm:p-5">
+                  {activeTab === 'dashboard' && (
+                    <div className="max-w-md mx-auto text-center mt-10 sm:mt-16 space-y-4">
                   <h2 className="text-xl font-semibold tracking-tight">Today Distance</h2>
 
                   {vehicle?.vehicle_number && (
@@ -285,32 +335,22 @@ useEffect(() => {
                   <p className="text-sm text-muted-foreground">
                     Distance covered by assigned vehicle
                   </p>
-                </div>
-              )}
+                    </div>
+                  )}
 
-              {activeTab === 'location' && vehicle && (
-                <div className="w-full">
-                  <FleetMap user={{ vehicle_id: vehicle.vehicle_id }} />
+                  {activeTab === 'settings' && (
+                    <FleetSettings
+                      onVehicleAssigned={(v) => {
+                        setVehicle(v);
+                        localStorage.setItem('assignedVehicle', JSON.stringify(v));
+                      }}
+                      onLogout={onLogout}
+                    />
+                  )}
                 </div>
-              )}
-
-              {activeTab === 'location' && !vehicle && (
-                <div className="text-center text-muted-foreground mt-10 sm:mt-16">
-                  Please assign a vehicle in Settings first
-                </div>
-              )}
-
-              {activeTab === 'settings' && (
-                <FleetSettings
-                  onVehicleAssigned={(v) => {
-                    setVehicle(v);
-                    localStorage.setItem('assignedVehicle', JSON.stringify(v));
-                  }}
-                  onLogout={onLogout}
-                />
-              )}
+              </div>
             </div>
-          </div>
+          )}
         </main>
       </div>
     </div>
