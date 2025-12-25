@@ -4,7 +4,6 @@ import {
   Truck,
   Droplet,
   Navigation,
-  AlertCircle,
   MapPin,
   LogOut,
   User,
@@ -12,10 +11,20 @@ import {
   UserCheck,
   Map,
   Menu,
-  X,
+  Sun,
+  Moon,
 } from 'lucide-react';
 
 import { Button } from '../components/ui/button.jsx';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '../components/ui/sheet.jsx';
+
+import { Switch } from '../components/ui/switch.jsx';
 
 /* =========================
    SUPERVISOR PAGES
@@ -36,7 +45,7 @@ import { Companyroutesmanagemnt } from './Companyroutesmanagemnt.jsx';
  * - Page state
  * - Page rendering
  */
-export function SupervisorLayout({ onLogout, user }) {
+export function SupervisorLayout({ onLogout, user, theme, onThemeChange }) {
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -77,121 +86,163 @@ export function SupervisorLayout({ onLogout, user }) {
     }
   };
 
-  return (
-    <div className="flex min-h-svh flex-col bg-slate-100">
-      {/* ================= TOP HEADER ================= */}
-      <div className="relative">
-        <header className="sticky top-0 z-50 bg-slate-900/95 text-white backdrop-blur flex items-center px-4 sm:px-6 shadow-lg border-b border-white/10">
-          {/* Logo */}
-          <div className="flex items-center gap-3 mr-4 sm:mr-6 min-w-0">
-            <div className="bg-white/10 p-2 rounded-lg ring-1 ring-white/10 shrink-0">
-              <Truck className="h-5 w-5 text-white" />
-            </div>
-            <div className="min-w-0">
-              <h1 className="text-sm font-semibold leading-tight truncate">
-                FleetMaster Pro
-              </h1>
-              <p className="text-[10px] text-white/80 truncate">Supervisor Portal</p>
-            </div>
+  const handleNavClick = (pageId) => {
+    setCurrentPage(pageId);
+    setMobileOpen(false);
+  };
+
+  const sidebarContent = (
+    <aside className="flex w-full bg-sidebar text-sidebar-foreground flex-col min-h-0">
+      <div className="p-4 sm:p-6 border-b border-sidebar-border">
+        <div className="flex items-center gap-3">
+          <div className="bg-sidebar-primary text-sidebar-primary-foreground p-2 rounded-lg">
+            <Truck className="h-6 w-6" />
           </div>
+          <div className="min-w-0">
+            <h1 className="font-semibold tracking-tight truncate">
+              FleetMaster Pro
+            </h1>
+            <p className="text-xs text-sidebar-foreground/70 truncate">
+              Supervisor Portal
+            </p>
+          </div>
+        </div>
+      </div>
 
-          {/* Navigation (centered on desktop, hidden on small screens) */}
-          <nav className="flex-1 hidden sm:flex items-center justify-center gap-2">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = currentPage === item.id;
+      <nav className="flex-1 min-h-0 p-3 sm:p-4 space-y-1 overflow-y-auto">
+        <p className="text-xs text-sidebar-foreground/70 px-3 sm:px-4 mb-3">
+          OPERATIONS
+        </p>
 
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => setCurrentPage(item.id)}
-                  className={`inline-flex items-center gap-2 h-10 px-3 rounded-md text-sm transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 ${
-                    isActive
-                      ? 'bg-emerald-500/95 text-white shadow-md ring-1 ring-emerald-200/60'
-                      : 'text-slate-200 hover:bg-white/10 hover:text-white'
-                  }`}
-                >
-                  <Icon className="h-4 w-4" />
-                  <span className="whitespace-nowrap">{item.label}</span>
-                </button>
-              );
-            })}
-          </nav>
+        {navItems.map((item) => {
+          const Icon = item.icon;
+          const isActive = currentPage === item.id;
 
-          {/* Mobile menu button */}
-          <div className="sm:hidden flex-1 flex items-center justify-center">
+          return (
             <button
-              onClick={() => setMobileOpen((s) => !s)}
-              aria-label="Toggle navigation"
-              className="inline-flex items-center justify-center h-11 w-11 rounded-md text-slate-200 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+              key={item.id}
+              onClick={() => handleNavClick(item.id)}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar ${
+                isActive
+                  ? 'bg-sidebar-primary text-sidebar-primary-foreground'
+                  : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+              }`}
             >
-              {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              <Icon className="h-5 w-5" />
+              <span className="text-sm font-medium">{item.label}</span>
             </button>
-          </div>
+          );
+        })}
+      </nav>
 
-          {/* User + Logout */}
-          <div className="flex items-center gap-2 sm:gap-3">
-            <div className="flex items-center gap-3 px-3 py-2 bg-white/5 rounded-lg">
-              <div className="h-8 w-8 rounded-full bg-emerald-500/20 flex items-center justify-center ring-1 ring-white/10">
-                <User className="h-4 w-4 text-white" />
-              </div>
-              <div className="hidden md:block">
-                <p className="text-xs font-medium leading-none text-white">
-                  {user?.name || 'Supervisor'}
-                </p>
-                <p className="text-[10px] text-white/80">Operations</p>
-              </div>
+      <div className="p-3 sm:p-4 border-t border-sidebar-border shrink-0">
+        <div className="flex items-center gap-3 p-3 bg-sidebar-accent/60 rounded-lg mb-3">
+          <div className="h-10 w-10 rounded-full bg-sidebar-primary text-sidebar-primary-foreground flex items-center justify-center">
+            <User className="h-5 w-5" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium truncate">
+              {user?.name || 'Supervisor'}
+            </p>
+            <p className="text-xs text-sidebar-foreground/70 truncate">Operations</p>
+          </div>
+        </div>
+
+        <Button
+          onClick={onLogout}
+          variant="ghost"
+          className="w-full justify-start text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+        >
+          <LogOut className="h-4 w-4 mr-2" />
+          Logout
+        </Button>
+      </div>
+    </aside>
+  );
+
+  return (
+    <div className="flex min-h-svh bg-background overflow-hidden">
+      <div className="hidden lg:flex w-72 shrink-0 min-h-0 lg:sticky lg:top-0 lg:h-svh">
+        {sidebarContent}
+      </div>
+
+      <div className="flex min-w-0 flex-1 flex-col">
+        <header className="sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur">
+          <div className="flex h-14 items-center justify-between gap-3 px-4 sm:px-6">
+            <div className="flex items-center gap-3 min-w-0">
+              <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+                <SheetTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    className="h-11 w-11 lg:hidden"
+                    aria-label="Open navigation"
+                  >
+                    <Menu className="h-5 w-5" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent
+                  side="left"
+                  className="w-[18rem] max-w-[90vw] p-0 bg-sidebar text-sidebar-foreground border-sidebar-border"
+                >
+                  <SheetHeader className="sr-only">
+                    <SheetTitle>Navigation</SheetTitle>
+                  </SheetHeader>
+                  {sidebarContent}
+                </SheetContent>
+              </Sheet>
+
+              <button
+                type="button"
+                onClick={() => handleNavClick('dashboard')}
+                className="flex items-center gap-3 min-w-0 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                aria-label="Go to dashboard"
+              >
+                <div className="bg-sidebar-primary text-sidebar-primary-foreground p-2 rounded-lg shrink-0">
+                  <Truck className="h-5 w-5" />
+                </div>
+                <div className="min-w-0 text-left">
+                  <h1 className="text-sm font-semibold tracking-tight truncate">
+                    FleetMaster Pro
+                  </h1>
+                  <p className="text-[10px] text-muted-foreground truncate">Supervisor Portal</p>
+                </div>
+              </button>
             </div>
 
-            <Button
-              onClick={onLogout}
-              variant="ghost"
-              className="text-white bg-white/5 hover:bg-emerald-600/90 hover:text-white px-3 h-10 rounded-md"
-            >
-              <LogOut className="h-4 w-4 mr-2" />
-              Logout
-            </Button>
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 h-11 rounded-md border border-border bg-muted/40 px-3">
+                <Sun className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                <Switch
+                  checked={theme === 'dark'}
+                  onCheckedChange={(checked) =>
+                    onThemeChange?.(checked ? 'dark' : 'light')
+                  }
+                  aria-label="Toggle dark mode"
+                />
+                <Moon className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+              </div>
+              <Button
+                onClick={onLogout}
+                variant="outline"
+                className="h-11"
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Logout
+              </Button>
+            </div>
           </div>
         </header>
 
-        {/* Mobile dropdown nav (shown when hamburger open) */}
-        {mobileOpen && (
-          <div className="sm:hidden absolute top-full left-0 right-0 bg-slate-900/95 text-white shadow-md z-40 border-t border-white/5 backdrop-blur-sm">
-            <div className="flex flex-col p-2">
-              {navItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = currentPage === item.id;
-
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => {
-                      setCurrentPage(item.id);
-                      setMobileOpen(false);
-                    }}
-                    className={`w-full text-left flex items-center gap-3 px-3 py-3 rounded-md text-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 ${
-                      isActive
-                        ? 'bg-emerald-500/95 text-white shadow-md'
-                        : 'text-slate-200 hover:bg-white/10 hover:text-white'
-                    }`}
-                  >
-                    <Icon className="h-4 w-4" />
-                    {item.label}
-                  </button>
-                );
-              })}
+        <main className="flex-1 min-h-0 overflow-auto bg-background p-3 sm:p-4 lg:p-6">
+          <div className="mx-auto w-full max-w-7xl">
+            <div className="rounded-xl border border-border bg-card p-4 sm:p-5">
+              {renderPage()}
             </div>
           </div>
-        )}
+        </main>
       </div>
-
-      <main className="flex-1 min-h-0 overflow-auto bg-gradient-to-b from-slate-50 to-slate-100 p-4 sm:p-6 lg:p-8">
-        <div className="max-w-7xl mx-auto w-full">
-          <div className="rounded-lg bg-white/90 shadow-sm p-4 sm:p-6">
-            {renderPage()}
-          </div>
-        </div>
-      </main>
     </div>
   );
 }

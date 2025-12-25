@@ -68,7 +68,9 @@ export function OwnerLiveTracking() {
     };
 
     load();
-    const i = setInterval(load, isPlaying ? 5000 : 0);
+    if (!isPlaying) return;
+
+    const i = setInterval(load, 5000);
     return () => clearInterval(i);
   }, [isPlaying]);
 
@@ -244,67 +246,75 @@ export function OwnerLiveTracking() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* HEADER */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Live Vehicle Tracking</h1>
-          <p className="text-slate-600">Monitor your fleet in real-time</p>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h1 className="text-lg sm:text-xl font-semibold tracking-tight text-foreground">
+            Live Vehicle Tracking
+          </h1>
+          <p className="text-sm text-muted-foreground">Monitor your fleet in real-time</p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <button
-            onClick={toggleAutoRefresh}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition ${
-              isPlaying
-                ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-            }`}
-          >
-            {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-            {isPlaying ? 'Pause' : 'Resume'} Updates
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={toggleAutoRefresh}
+          aria-pressed={!isPlaying}
+          className={`inline-flex items-center gap-2 h-11 px-4 rounded-md border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
+            isPlaying
+              ? 'border-border bg-card hover:bg-accent'
+              : 'border-border bg-muted/40 hover:bg-accent'
+          }`}
+        >
+          {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+          <span className="text-sm font-medium">
+            {isPlaying ? 'Pause' : 'Resume'}
+          </span>
+        </button>
       </div>
 
       {/* STATUS FILTERS */}
       <div className="flex flex-wrap gap-3">
         <button
+          type="button"
           onClick={() => setStatusFilter('all')}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+          className={`h-11 px-4 rounded-md text-sm font-medium transition-colors border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
             statusFilter === 'all'
-              ? 'bg-slate-900 text-white'
-              : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+              ? 'bg-primary text-primary-foreground border-primary'
+              : 'bg-card text-muted-foreground border-border hover:bg-accent hover:text-accent-foreground'
           }`}
         >
           All Vehicles ({statusCounts.total})
         </button>
         <button
+          type="button"
           onClick={() => setStatusFilter('moving')}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+          className={`h-11 px-4 rounded-md text-sm font-medium transition-colors border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
             statusFilter === 'moving'
-              ? 'bg-green-600 text-white'
-              : 'bg-green-100 text-green-700 hover:bg-green-200'
+              ? 'bg-success text-success-foreground border-success'
+              : 'bg-card text-muted-foreground border-border hover:bg-accent hover:text-accent-foreground'
           }`}
         >
           Moving ({statusCounts.moving})
         </button>
         <button
+          type="button"
           onClick={() => setStatusFilter('idling')}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+          className={`h-11 px-4 rounded-md text-sm font-medium transition-colors border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
             statusFilter === 'idling'
-              ? 'bg-yellow-500 text-white'
-              : 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
+              ? 'bg-warning text-warning-foreground border-warning'
+              : 'bg-card text-muted-foreground border-border hover:bg-accent hover:text-accent-foreground'
           }`}
         >
           Idling ({statusCounts.idling})
         </button>
         <button
+          type="button"
           onClick={() => setStatusFilter('stopped')}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+          className={`h-11 px-4 rounded-md text-sm font-medium transition-colors border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
             statusFilter === 'stopped'
-              ? 'bg-red-600 text-white'
-              : 'bg-red-100 text-red-700 hover:bg-red-200'
+              ? 'bg-destructive text-destructive-foreground border-destructive'
+              : 'bg-card text-muted-foreground border-border hover:bg-accent hover:text-accent-foreground'
           }`}
         >
           Stopped ({statusCounts.stopped})
@@ -312,63 +322,62 @@ export function OwnerLiveTracking() {
       </div>
 
       {/* MAP CONTAINER */}
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+      <div className="rounded-xl border border-border bg-card overflow-hidden">
         {mapError && (
-          <div className="p-4 bg-red-50 border-b border-red-200">
-            <p className="text-red-700 text-sm">{mapError}</p>
+          <div className="p-4 bg-destructive/10 border-b border-border">
+            <p className="text-destructive text-sm">{mapError}</p>
           </div>
         )}
         <div
           id="owner-live-tracking-map"
           ref={mapRef}
-          className="w-full h-96"
-          style={{ minHeight: '600px' }}
+          className="w-full h-[60svh] min-h-[360px] sm:h-[65svh] lg:h-[72svh] max-h-[820px]"
         />
       </div>
 
       {/* VEHICLE DETAILS POPUP */}
       {showPopup && selectedVehicle && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4">
-            <h3 className="text-lg font-semibold mb-4">Vehicle Details</h3>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" role="dialog" aria-modal="true" aria-label="Vehicle details">
+          <div className="bg-card rounded-xl border border-border p-6 max-w-md w-full">
+            <h3 className="text-lg font-semibold mb-4 text-foreground">Vehicle Details</h3>
 
             <div className="space-y-3">
               <div>
-                <p className="text-sm text-slate-600">Vehicle Number</p>
-                <p className="font-medium">{selectedVehicle.number}</p>
+                <p className="text-sm text-muted-foreground">Vehicle Number</p>
+                <p className="font-medium text-foreground">{selectedVehicle.number}</p>
               </div>
 
               <div>
-                <p className="text-sm text-slate-600">Status</p>
+                <p className="text-sm text-muted-foreground">Status</p>
                 <p className={`font-medium ${
-                  selectedVehicle.status === 'moving' ? 'text-green-600' :
-                  selectedVehicle.status === 'idling' ? 'text-yellow-600' : 'text-red-600'
+                  selectedVehicle.status === 'moving' ? 'text-success' :
+                  selectedVehicle.status === 'idling' ? 'text-warning' : 'text-destructive'
                 }`}>
                   {selectedVehicle.status}
                 </p>
               </div>
 
               <div>
-                <p className="text-sm text-slate-600">Current Speed</p>
-                <p className="font-medium">{selectedVehicle.speed} km/h</p>
+                <p className="text-sm text-muted-foreground">Current Speed</p>
+                <p className="font-medium text-foreground">{selectedVehicle.speed} km/h</p>
               </div>
 
               <div>
-                <p className="text-sm text-slate-600">Today's Distance</p>
-                <p className="font-medium">{selectedVehicle.today_km} km</p>
+                <p className="text-sm text-muted-foreground">Today's Distance</p>
+                <p className="font-medium text-foreground">{selectedVehicle.today_km} km</p>
               </div>
 
               {vehicleDetails?.driver && (
                 <div>
-                  <p className="text-sm text-slate-600">Current Driver</p>
-                  <p className="font-medium">{vehicleDetails.driver.driver_name}</p>
+                  <p className="text-sm text-muted-foreground">Current Driver</p>
+                  <p className="font-medium text-foreground">{vehicleDetails.driver.driver_name}</p>
                 </div>
               )}
 
               {vehicleDetails?.lastMaintenance && (
                 <div>
-                  <p className="text-sm text-slate-600">Last Maintenance</p>
-                  <p className="font-medium">
+                  <p className="text-sm text-muted-foreground">Last Maintenance</p>
+                  <p className="font-medium text-foreground">
                     {new Date(vehicleDetails.lastMaintenance.service_date).toLocaleDateString()}
                   </p>
                 </div>
@@ -377,8 +386,9 @@ export function OwnerLiveTracking() {
 
             <div className="flex gap-3 mt-6">
               <button
+                type="button"
                 onClick={() => setShowPopup(false)}
-                className="flex-1 px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200"
+                className="flex-1 h-11 px-4 rounded-md border border-border bg-muted/40 text-foreground hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               >
                 Close
               </button>

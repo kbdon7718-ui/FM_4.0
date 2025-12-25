@@ -2,6 +2,7 @@ import { getOwnerRouteHistory } from '../services/api.js';
 import { Play, Pause, SkipBack, SkipForward, RotateCcw, Calendar, Clock, MapPin } from 'lucide-react';
 import { Button } from '../components/ui/button.jsx';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select.jsx';
+import { Input } from '../components/ui/input.jsx';
 import { useEffect, useState, useRef } from 'react';
 
 const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5002";
@@ -393,20 +394,20 @@ export function RouteTracing() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* HEADER */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Route Tracing</h1>
-          <p className="text-slate-600">Replay vehicle movement and analyze stops</p>
+          <h1 className="text-lg sm:text-xl font-semibold tracking-tight text-foreground">Route Tracing</h1>
+          <p className="text-sm text-muted-foreground">Replay vehicle movement and analyze stops</p>
         </div>
       </div>
 
       {/* CONTROLS */}
-      <div className="bg-white rounded-xl border border-slate-200 p-6">
+      <div className="bg-card rounded-xl border border-border p-4 sm:p-5">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
+            <label className="block text-sm font-medium text-foreground mb-2">
               Select Vehicle
             </label>
             <Select value={selectedVehicle} onValueChange={setSelectedVehicle}>
@@ -424,19 +425,18 @@ export function RouteTracing() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
+            <label className="block text-sm font-medium text-foreground mb-2">
               Select Date
             </label>
-            <input
+            <Input
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
+            <label className="block text-sm font-medium text-foreground mb-2">
               Playback Speed
             </label>
             <Select value={speed.toString()} onValueChange={(value) => setSpeed(parseFloat(value))}>
@@ -466,7 +466,7 @@ export function RouteTracing() {
 
         {/* PLAYBACK CONTROLS */}
         {gpsLogs.length > 0 && (
-          <div className="flex items-center justify-center gap-4 p-4 bg-slate-50 rounded-lg">
+          <div className="flex items-center justify-center gap-4 p-4 bg-muted/30 rounded-lg">
             <Button variant="outline" size="sm" onClick={skipToStart}>
               <SkipBack className="h-4 w-4" />
             </Button>
@@ -483,7 +483,7 @@ export function RouteTracing() {
               <SkipForward className="h-4 w-4" />
             </Button>
 
-            <div className="text-sm text-slate-600 ml-4">
+            <div className="text-sm text-muted-foreground ml-4">
               {currentIndex < gpsLogs.length ?
                 formatTime(new Date(gpsLogs[currentIndex].recorded_at)) :
                 'End of route'
@@ -496,42 +496,42 @@ export function RouteTracing() {
       {/* ROUTE STATISTICS */}
       {routeStats && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-white rounded-lg border border-slate-200 p-4">
+          <div className="bg-card rounded-lg border border-border p-4">
             <div className="flex items-center gap-2">
               <Clock className="h-5 w-5 text-blue-600" />
               <div>
-                <p className="text-sm text-slate-600">Total Duration</p>
-                <p className="text-lg font-semibold">{routeStats.totalDuration}h</p>
+                <p className="text-sm text-muted-foreground">Total Duration</p>
+                <p className="text-lg font-semibold text-foreground">{routeStats.totalDuration}h</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg border border-slate-200 p-4">
+          <div className="bg-card rounded-lg border border-border p-4">
             <div className="flex items-center gap-2">
               <MapPin className="h-5 w-5 text-green-600" />
               <div>
-                <p className="text-sm text-slate-600">Distance</p>
-                <p className="text-lg font-semibold">{routeStats.totalDistance} km</p>
+                <p className="text-sm text-muted-foreground">Distance</p>
+                <p className="text-lg font-semibold text-foreground">{routeStats.totalDistance} km</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg border border-slate-200 p-4">
+          <div className="bg-card rounded-lg border border-border p-4">
             <div className="flex items-center gap-2">
               <Calendar className="h-5 w-5 text-purple-600" />
               <div>
-                <p className="text-sm text-slate-600">Stops</p>
-                <p className="text-lg font-semibold">{routeStats.stopsCount}</p>
+                <p className="text-sm text-muted-foreground">Stops</p>
+                <p className="text-lg font-semibold text-foreground">{routeStats.stopsCount}</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg border border-slate-200 p-4">
+          <div className="bg-card rounded-lg border border-border p-4">
             <div className="flex items-center gap-2">
               <Activity className="h-5 w-5 text-orange-600" />
               <div>
-                <p className="text-sm text-slate-600">Avg Speed</p>
-                <p className="text-lg font-semibold">{routeStats.avgSpeed} km/h</p>
+                <p className="text-sm text-muted-foreground">Avg Speed</p>
+                <p className="text-lg font-semibold text-foreground">{routeStats.avgSpeed} km/h</p>
               </div>
             </div>
           </div>
@@ -539,43 +539,42 @@ export function RouteTracing() {
       )}
 
       {/* MAP CONTAINER */}
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+      <div className="bg-card rounded-xl border border-border overflow-hidden">
         {mapError && (
-          <div className="p-4 bg-red-50 border-b border-red-200">
-            <p className="text-red-700 text-sm">{mapError}</p>
+          <div className="p-4 bg-destructive/10 border-b border-border">
+            <p className="text-destructive text-sm">{mapError}</p>
           </div>
         )}
         <div
           id="route-tracing-map"
           ref={mapRef}
-          className="w-full h-96"
-          style={{ minHeight: '600px' }}
+          className="w-full h-[60svh] min-h-[360px] sm:h-[65svh] lg:h-[72svh] max-h-[820px]"
         />
       </div>
 
       {/* STOPS LIST */}
       {stops.length > 0 && (
-        <div className="bg-white rounded-xl border border-slate-200 p-6">
-          <h3 className="text-lg font-semibold mb-4">Route Stops</h3>
+        <div className="bg-card rounded-xl border border-border p-4 sm:p-5">
+          <h3 className="text-lg font-semibold mb-4 text-foreground">Route Stops</h3>
           <div className="space-y-3 max-h-60 overflow-y-auto">
             {stops.map((stop, index) => (
-              <div key={index} className="flex items-center justify-between p-3 bg-red-50 rounded-lg border border-red-200">
+              <div key={index} className="flex items-center justify-between p-3 bg-destructive/10 rounded-lg border border-border">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center text-sm font-bold">
+                  <div className="w-8 h-8 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center text-sm font-bold">
                     {index + 1}
                   </div>
                   <div>
-                    <p className="font-medium">Stop {index + 1}</p>
-                    <p className="text-sm text-slate-600">
+                    <p className="font-medium text-foreground">Stop {index + 1}</p>
+                    <p className="text-sm text-muted-foreground">
                       {stop.position.lat.toFixed(4)}, {stop.position.lng.toFixed(4)}
                     </p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-medium">
+                  <p className="text-sm font-medium text-foreground">
                     {stop.duration.toFixed(1)} min
                   </p>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-muted-foreground">
                     {stop.startTime.toLocaleTimeString()} - {stop.endTime?.toLocaleTimeString() || 'Ongoing'}
                   </p>
                 </div>

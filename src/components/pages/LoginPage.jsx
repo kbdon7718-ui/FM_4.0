@@ -28,7 +28,7 @@ export function LoginPage({ onLogin }) {
      =============================== */
   const directLogin = (role) => {
     // Temporary direct access (DEV ONLY)
-    onLogin(role, { role });
+    onLogin(role);
   };
 
   const handleSubmit = async (e) => {
@@ -69,16 +69,16 @@ export function LoginPage({ onLogin }) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 px-4">
-      <Card className="w-full max-w-md border-slate-700 shadow-2xl">
+    <div className="min-h-svh flex items-center justify-center bg-background px-4 py-8">
+      <Card className="w-full max-w-md border-border bg-card shadow-lg">
         <CardHeader className="text-center space-y-3">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-xl bg-emerald-600 shadow-lg">
-            <Truck className="h-7 w-7 text-white" />
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-xl bg-sidebar-primary text-sidebar-primary-foreground shadow">
+            <Truck className="h-7 w-7" />
           </div>
-          <CardTitle className="text-3xl tracking-tight">
+          <CardTitle className="text-2xl sm:text-3xl tracking-tight">
             FleetMaster Pro
           </CardTitle>
-          <CardDescription className="text-sm text-slate-500">
+          <CardDescription className="text-sm text-muted-foreground">
             Fleet Operations, Fuel Intelligence & SLA Monitoring
           </CardDescription>
         </CardHeader>
@@ -90,21 +90,24 @@ export function LoginPage({ onLogin }) {
               =============================== */}
           <div className="space-y-3">
             <Button
-              className="w-full bg-blue-600 hover:bg-emerald-700"
+              variant="outline"
+              className="w-full h-11 justify-start"
               onClick={() => directLogin('OWNER')}
             >
               Login as Owner
             </Button>
 
             <Button
-              className="w-full bg-blue-600 hover:bg-blue-700"
+              variant="outline"
+              className="w-full h-11 justify-start"
               onClick={() => directLogin('SUPERVISOR')}
             >
               Login as Supervisor
             </Button>
 
             <Button
-              className="w-full bg-purple-600 hover:bg-purple-700"
+              variant="outline"
+              className="w-full h-11 justify-start"
               onClick={() => directLogin('FLEET')}
             >
               Login as Fleet
@@ -153,7 +156,7 @@ export function LoginPage({ onLogin }) {
           </form>
           */}
 
-          <p className="text-xs text-center text-slate-500">
+          <p className="text-xs text-center text-muted-foreground">
             ⚠ Direct login enabled for development only
           </p>
 
