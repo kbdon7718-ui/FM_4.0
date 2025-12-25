@@ -20,7 +20,7 @@ export default function App() {
   const [theme, setTheme] = useState(() => {
     const stored = localStorage.getItem(THEME_KEY);
     if (stored === 'light' || stored === 'dark') return stored;
-    return 'dark';
+    return 'light';
   });
 
   const [session, setSession] = useState(() => {

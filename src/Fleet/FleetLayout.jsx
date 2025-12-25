@@ -7,8 +7,6 @@ import {
   Menu,
   LogOut,
   User,
-  Sun,
-  Moon,
 } from 'lucide-react';
 import FleetMap from './FleetMap';
 import FleetSettings from './FleetSettings';
@@ -194,6 +192,17 @@ useEffect(() => {
           </div>
         </div>
 
+        <div className="flex items-center justify-between gap-3 p-3 bg-sidebar-accent/60 rounded-lg mb-2">
+          <div className="min-w-0">
+            <p className="text-sm font-medium truncate">Dark mode</p>
+          </div>
+          <Switch
+            checked={theme === 'dark'}
+            onCheckedChange={(checked) => onThemeChange?.(checked ? 'dark' : 'light')}
+            aria-label="Toggle dark mode"
+          />
+        </div>
+
         <Button
           onClick={onLogout}
           variant="ghost"
@@ -216,75 +225,44 @@ useEffect(() => {
       )}
 
       <div className="flex min-w-0 flex-col" style={{ minHeight: '100vh', paddingLeft: isDesktop ? 288 : 0 }}>
-        <header className="sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur">
-          <div className="flex h-14 md:h-16 items-center justify-between gap-3 px-4 sm:px-6">
-            <div className="flex items-center gap-3 min-w-0">
-              {!isDesktop && (
-                <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
-                  <SheetTrigger asChild>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      className="h-11 w-11"
-                      aria-label="Open navigation"
-                    >
-                      <Menu className="h-5 w-5" />
-                    </Button>
-                  </SheetTrigger>
-                  <SheetContent
-                    side="left"
-                    className="w-[18rem] max-w-[90vw] p-0 bg-sidebar text-sidebar-foreground border-sidebar-border"
+        {!isDesktop && (
+          <header className="sticky top-0 z-50 border-b border-border bg-background">
+            <div className="flex h-12 items-center gap-3 px-3">
+              <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
+                <SheetTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    className="h-9 w-9"
+                    aria-label="Open navigation"
                   >
-                    <SheetHeader className="sr-only">
-                      <SheetTitle>Navigation</SheetTitle>
-                    </SheetHeader>
-                    {sidebarContent}
-                  </SheetContent>
-                </Sheet>
-              )}
+                    <Menu className="h-5 w-5" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent
+                  side="left"
+                  className="w-[18rem] max-w-[90vw] p-0 bg-sidebar text-sidebar-foreground border-sidebar-border"
+                >
+                  <SheetHeader className="sr-only">
+                    <SheetTitle>Navigation</SheetTitle>
+                  </SheetHeader>
+                  {sidebarContent}
+                </SheetContent>
+              </Sheet>
 
               <button
                 type="button"
                 onClick={() => handleNavClick('dashboard')}
-                className="flex items-center gap-3 min-w-0 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                className="min-w-0 text-left"
                 aria-label="Go to dashboard"
               >
-                <div className="bg-sidebar-primary text-sidebar-primary-foreground p-2 rounded-lg shrink-0">
-                  <Truck className="h-5 w-5" />
-                </div>
-                <div className="min-w-0 text-left">
-                  <h1 className="text-sm font-semibold tracking-tight truncate">
-                    FleetMaster Pro
-                  </h1>
-                  <p className="text-[10px] text-muted-foreground truncate">Fleet Portal</p>
-                </div>
+                <div className="text-sm font-semibold tracking-tight truncate">FleetMaster Pro</div>
+                <div className="text-[10px] text-muted-foreground truncate">Fleet Portal</div>
               </button>
             </div>
-
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-2 h-11 rounded-md border border-border bg-muted/40 px-3">
-                <Sun className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                <Switch
-                  checked={theme === 'dark'}
-                  onCheckedChange={(checked) =>
-                    onThemeChange?.(checked ? 'dark' : 'light')
-                  }
-                  aria-label="Toggle dark mode"
-                />
-                <Moon className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-              </div>
-              <Button
-                onClick={onLogout}
-                variant="destructive"
-                className="h-11"
-              >
-                <LogOut className="h-4 w-4 mr-2" />
-                Logout
-              </Button>
-            </div>
-          </div>
-        </header>
+          </header>
+        )}
 
         <main className="flex-1 min-h-0 overflow-auto bg-background">
           {isWidePage ? (
