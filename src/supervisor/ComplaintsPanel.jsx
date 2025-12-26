@@ -137,11 +137,23 @@ export function ComplaintsPanel() {
   const getSeverityBadge = (severity) => {
     switch (severity) {
       case 'high':
-        return <Badge className="bg-red-500"><AlertCircle className="h-3 w-3 mr-1" />High Priority</Badge>;
+        return (
+          <Badge className="bg-destructive text-destructive-foreground">
+            <AlertCircle className="h-3 w-3 mr-1" />High Priority
+          </Badge>
+        );
       case 'medium':
-        return <Badge className="bg-orange-500"><AlertCircle className="h-3 w-3 mr-1" />Medium</Badge>;
+        return (
+          <Badge className="bg-warning text-warning-foreground">
+            <AlertCircle className="h-3 w-3 mr-1" />Medium
+          </Badge>
+        );
       case 'low':
-        return <Badge className="bg-yellow-500"><AlertCircle className="h-3 w-3 mr-1" />Low</Badge>;
+        return (
+          <Badge className="bg-muted text-foreground">
+            <AlertCircle className="h-3 w-3 mr-1" />Low
+          </Badge>
+        );
       default:
         return <Badge variant="secondary">{severity}</Badge>;
     }
@@ -150,46 +162,49 @@ export function ComplaintsPanel() {
   const getStatusBadge = (status) => {
     switch (status) {
       case 'pending':
-        return <Badge variant="outline" className="text-orange-600 border-orange-600"><Clock className="h-3 w-3 mr-1" />Pending</Badge>;
+        return (
+          <Badge variant="outline" className="bg-warning-muted border-warning-muted text-warning">
+            <Clock className="h-3 w-3 mr-1" />Pending
+          </Badge>
+        );
       case 'investigating':
-        return <Badge variant="outline" className="text-blue-600 border-blue-600"><AlertCircle className="h-3 w-3 mr-1" />Investigating</Badge>;
+        return (
+          <Badge variant="outline" className="bg-info-muted border-info-muted text-info">
+            <AlertCircle className="h-3 w-3 mr-1" />Investigating
+          </Badge>
+        );
       case 'resolved':
-        return <Badge variant="outline" className="text-green-600 border-green-600"><CheckCircle className="h-3 w-3 mr-1" />Resolved</Badge>;
+        return (
+          <Badge variant="outline" className="bg-success-muted border-success-muted text-success">
+            <CheckCircle className="h-3 w-3 mr-1" />Resolved
+          </Badge>
+        );
       default:
         return <Badge variant="secondary">{status}</Badge>;
     }
   };
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'pending': return 'border-l-orange-500';
-      case 'investigating': return 'border-l-blue-500';
-      case 'resolved': return 'border-l-green-500';
-      default: return 'border-l-gray-500';
-    }
-  };
-
   const summaryStats = [
-    { label: 'Total Complaints', value: complaints.length, color: 'bg-slate-600' },
-    { label: 'Pending', value: complaints.filter(c => c.status === 'pending').length, color: 'bg-orange-500' },
-    { label: 'Investigating', value: complaints.filter(c => c.status === 'investigating').length, color: 'bg-blue-500' },
-    { label: 'Resolved', value: complaints.filter(c => c.status === 'resolved').length, color: 'bg-green-500' },
+    { label: 'Total Complaints', value: complaints.length, bg: 'bg-muted', fg: 'text-foreground' },
+    { label: 'Pending', value: complaints.filter(c => c.status === 'pending').length, bg: 'bg-warning', fg: 'text-warning-foreground' },
+    { label: 'Investigating', value: complaints.filter(c => c.status === 'investigating').length, bg: 'bg-info', fg: 'text-info-foreground' },
+    { label: 'Resolved', value: complaints.filter(c => c.status === 'resolved').length, bg: 'bg-success', fg: 'text-success-foreground' },
   ];
 
   return (
     <div className="space-y-6">
       {/* Summary Stats */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {summaryStats.map((stat, index) => (
-          <Card key={index} className="border-slate-200">
+          <Card key={index} className="border-border">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-slate-600 mb-1">{stat.label}</p>
-                  <p className="text-slate-900">{stat.value}</p>
+                  <p className="text-sm text-muted-foreground mb-1">{stat.label}</p>
+                  <p className="text-foreground text-2xl font-semibold tabular-nums">{stat.value}</p>
                 </div>
-                <div className={`${stat.color} p-3 rounded-full`}>
-                  <MessageSquare className="h-6 w-6 text-white" />
+                <div className={`${stat.bg} ${stat.fg} p-3 rounded-full`}>
+                  <MessageSquare className="h-6 w-6" />
                 </div>
               </div>
             </CardContent>
@@ -198,11 +213,11 @@ export function ComplaintsPanel() {
       </div>
 
       {/* Filters */}
-      <Card className="border-slate-200">
+      <Card className="border-border">
         <CardContent className="p-4">
-          <div className="flex items-center gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
             <Select defaultValue="all">
-              <SelectTrigger className="w-48">
+              <SelectTrigger className="w-full sm:w-56">
                 <SelectValue placeholder="Filter by Status" />
               </SelectTrigger>
               <SelectContent>
@@ -214,7 +229,7 @@ export function ComplaintsPanel() {
             </Select>
 
             <Select defaultValue="all-severity">
-              <SelectTrigger className="w-48">
+              <SelectTrigger className="w-full sm:w-56">
                 <SelectValue placeholder="Filter by Severity" />
               </SelectTrigger>
               <SelectContent>
@@ -226,7 +241,7 @@ export function ComplaintsPanel() {
             </Select>
 
             <Select defaultValue="recent">
-              <SelectTrigger className="w-48">
+              <SelectTrigger className="w-full sm:w-56">
                 <SelectValue placeholder="Sort by" />
               </SelectTrigger>
               <SelectContent>
@@ -242,59 +257,72 @@ export function ComplaintsPanel() {
       {/* Complaints List */}
       <div className="space-y-4">
         {complaints.map((complaint) => (
-          <Card key={complaint.id} className={`border-l-4 ${getStatusColor(complaint.status)} border-slate-200`}>
+          <Card
+            key={complaint.id}
+            className="border-l-4 border-border"
+            style={{
+              borderLeftColor:
+                complaint.status === 'pending'
+                  ? 'var(--warning)'
+                  : complaint.status === 'investigating'
+                  ? 'var(--info)'
+                  : complaint.status === 'resolved'
+                  ? 'var(--success)'
+                  : 'var(--border)',
+            }}
+          >
             <CardContent className="p-6">
-              <div className="grid grid-cols-12 gap-6">
+              <div className="flex flex-col lg:grid lg:grid-cols-12 gap-4 sm:gap-6">
                 {/* Main Content */}
-                <div className="col-span-8 space-y-4">
+                <div className="lg:col-span-8 space-y-4">
                   <div className="flex items-start justify-between">
                     <div>
                       <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-slate-900">{complaint.issue}</h3>
+                        <h3 className="text-foreground font-semibold">{complaint.issue}</h3>
                         {getSeverityBadge(complaint.severity)}
                         {getStatusBadge(complaint.status)}
                       </div>
-                      <p className="text-sm text-slate-600">{complaint.complaintId} • {complaint.timestamp}</p>
+                      <p className="text-sm text-muted-foreground">{complaint.complaintId} • {complaint.timestamp}</p>
                     </div>
                   </div>
 
-                  <p className="text-slate-700">{complaint.description}</p>
+                  <p className="text-foreground/90">{complaint.description}</p>
 
-                  <div className="grid grid-cols-2 gap-4 p-4 bg-slate-50 rounded-lg">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-muted/30 border border-border rounded-lg">
                     <div>
-                      <p className="text-xs text-slate-600 mb-1">Vehicle & Driver</p>
+                      <p className="text-xs text-muted-foreground mb-1">Vehicle & Driver</p>
                       <div className="flex items-center gap-2">
-                        <Truck className="h-4 w-4 text-slate-400" />
-                        <span className="text-sm">{complaint.vehicle}</span>
+                        <Truck className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm text-foreground">{complaint.vehicle}</span>
                       </div>
                       <div className="flex items-center gap-2 mt-1">
-                        <User className="h-4 w-4 text-slate-400" />
-                        <span className="text-sm">{complaint.driver}</span>
+                        <User className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm text-foreground">{complaint.driver}</span>
                       </div>
                     </div>
                     <div>
-                      <p className="text-xs text-slate-600 mb-1">Route & Location</p>
-                      <p className="text-sm">{complaint.route}</p>
-                      <p className="text-sm text-slate-500 mt-1">{complaint.location}</p>
+                      <p className="text-xs text-muted-foreground mb-1">Route & Location</p>
+                      <p className="text-sm text-foreground">{complaint.route}</p>
+                      <p className="text-sm text-muted-foreground mt-1">{complaint.location}</p>
                     </div>
                   </div>
                 </div>
 
                 {/* Customer Details & Actions */}
-                <div className="col-span-4 space-y-4">
-                  <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                    <p className="text-sm text-blue-900 mb-3">Customer Details</p>
+                <div className="lg:col-span-4 space-y-4">
+                  <div className="bg-info-muted p-4 rounded-lg border border-info-muted">
+                    <p className="text-sm text-foreground mb-3">Customer Details</p>
                     <div className="space-y-2">
-                      <p className="text-sm">{complaint.customer}</p>
-                      <div className="flex items-center gap-2 text-sm text-slate-600">
+                      <p className="text-sm text-foreground">{complaint.customer}</p>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <User className="h-3 w-3" />
                         <span>{complaint.contactPerson}</span>
                       </div>
-                      <div className="flex items-center gap-2 text-sm text-slate-600">
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Phone className="h-3 w-3" />
                         <span>{complaint.phone}</span>
                       </div>
-                      <div className="flex items-center gap-2 text-sm text-slate-600">
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Mail className="h-3 w-3" />
                         <span className="text-xs">{complaint.email}</span>
                       </div>
@@ -304,12 +332,12 @@ export function ComplaintsPanel() {
                   <div className="space-y-2">
                     <Dialog>
                       <DialogTrigger asChild>
-                        <Button className="w-full bg-[#0f172a] hover:bg-[#1e293b]" onClick={() => setSelectedComplaint(complaint.id)}>
+                        <Button className="w-full" onClick={() => setSelectedComplaint(complaint.id)}>
                           <Send className="h-4 w-4 mr-2" />
                           Respond
                         </Button>
                       </DialogTrigger>
-                      <DialogContent className="max-w-2xl">
+                      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
                         <DialogHeader>
                           <DialogTitle>Respond to Complaint</DialogTitle>
                           <DialogDescription>
@@ -319,7 +347,7 @@ export function ComplaintsPanel() {
                         <div className="space-y-4 mt-4">
                           <div>
                             <p className="text-sm mb-2">Customer: {complaint.customer}</p>
-                            <p className="text-sm text-slate-600 mb-4">{complaint.description}</p>
+                            <p className="text-sm text-muted-foreground mb-4">{complaint.description}</p>
                           </div>
                           
                           <div className="space-y-2">
@@ -348,7 +376,7 @@ export function ComplaintsPanel() {
                           </div>
 
                           <div className="flex gap-3">
-                            <Button className="flex-1 bg-[#0f172a] hover:bg-[#1e293b]">
+                            <Button className="flex-1">
                               Send Response
                             </Button>
                             <Button variant="outline" className="flex-1">

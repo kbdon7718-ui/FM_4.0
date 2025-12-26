@@ -174,7 +174,7 @@ export default function SupervisorDashboard({ onNavigate }) {
                   key={v.id}
                   type="button"
                   onClick={() => setSelectedVehicleId(v.id)}
-                  className={`w-full text-left p-3 rounded-lg border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ${
+                  className={`w-full text-left p-3 rounded-lg border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
                     selectedVehicleId === v.id
                       ? 'border-success-muted bg-success-muted'
                       : 'border-border bg-card hover:bg-accent'

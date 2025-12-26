@@ -213,23 +213,29 @@ export function Maintenance() {
      UI
   ===================================== */
   return (
-    <div className="h-full flex flex-col p-6">
+    <div className="space-y-4">
       {/* ALERTS BAR - FIXED AT TOP */}
       {alerts.length > 0 && (
-        <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-4 rounded-lg flex-shrink-0">
+        <div
+          className="bg-destructive-muted border border-destructive-muted border-l-4 p-4 rounded-lg"
+          style={{ borderLeftColor: 'var(--destructive)' }}
+        >
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-lg font-semibold text-red-600">
+              <h3 className="text-lg font-semibold text-destructive">
                 🚨 Maintenance Alerts ({alerts.length})
               </h3>
               <div className="flex flex-wrap gap-2 mt-2">
                 {alerts.slice(0, 3).map((alert) => (
-                  <span key={alert.alert_id} className="bg-red-100 text-red-800 px-2 py-1 rounded text-sm">
+                  <span
+                    key={alert.alert_id}
+                    className="bg-destructive-muted border border-destructive-muted text-destructive px-2 py-1 rounded text-sm"
+                  >
                     {alert.vehicle_number}: {alert.alert_message}
                   </span>
                 ))}
                 {alerts.length > 3 && (
-                  <span className="text-red-600 text-sm">+{alerts.length - 3} more</span>
+                  <span className="text-destructive text-sm">+{alerts.length - 3} more</span>
                 )}
               </div>
             </div>
@@ -237,407 +243,409 @@ export function Maintenance() {
         </div>
       )}
 
-      <div className="flex-1 overflow-hidden">
-        <div className="h-full grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* LEFT CARD - FORM (SCROLLABLE) */}
-          <div className="lg:col-span-2 bg-white rounded-xl border shadow-sm overflow-hidden flex flex-col">
-            <div className="p-6 border-b bg-gray-50">
-              <h2 className="text-xl font-semibold text-gray-800">
-                🔧 Record Maintenance Entry
-              </h2>
-            </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+        {/* LEFT CARD - FORM (SCROLLABLE) */}
+        <div className="lg:col-span-2 bg-card rounded-xl border border-border overflow-hidden">
+          <div className="p-4 sm:p-6 border-b border-border bg-muted/30">
+            <h2 className="text-lg sm:text-xl font-semibold tracking-tight text-foreground">
+              🔧 Record Maintenance Entry
+            </h2>
+          </div>
 
-            <div className="flex-1 overflow-y-auto p-6">
-              <div className="space-y-6">
-                {/* BASIC INFO SECTION */}
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h3 className="text-sm font-medium text-gray-700 mb-3 uppercase tracking-wide">
-                    Basic Information
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* VEHICLE */}
-                    <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Vehicle *
-                      </label>
-                      <div className="relative">
-                        <input
-                          type="text"
-                          placeholder="Search vehicle number..."
-                          className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                          value={search || selectedVehicleNumber}
-                          onChange={(e) => {
-                            setSearch(e.target.value);
-                            setVehicleId("");
-                            setVehicleNumber("");
-                            setShowList(true);
-                          }}
-                          onFocus={() => setShowList(true)}
-                        />
-                        {showList && (
-                          <div className="absolute z-20 w-full bg-white border border-gray-300 rounded-lg mt-1 max-h-48 overflow-y-auto shadow-lg">
-                            {vehicles
-                              .filter(v =>
-                                !search ||
-                                v.vehicle_number
-                                  ?.toLowerCase()
-                                  .includes(search.toLowerCase())
-                              )
-                              .map((vehicle) => (
-                                <div
-                                  key={vehicle.vehicle_id}
-                                  className="p-3 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-b-0"
-                                  onClick={() => {
-                                    setVehicleId(vehicle.vehicle_id);
-                                    setVehicleNumber(vehicle.vehicle_number);
-                                    setSearch(vehicle.vehicle_number);
-                                    setShowList(false);
-                                  }}
-                                >
-                                  {vehicle.vehicle_number}
-                                </div>
-                              ))}
-                          </div>
-                        )}
-                      </div>
+          <div className="p-4 sm:p-6">
+            <div className="space-y-6">
+              {/* BASIC INFO SECTION */}
+              <div className="bg-muted/30 border border-border p-4 rounded-lg">
+                <h3 className="text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wide">
+                  Basic Information
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* VEHICLE */}
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-foreground mb-1">
+                      Vehicle *
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        placeholder="Search vehicle number..."
+                        className="w-full h-11 rounded-md border border-border bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        value={search || selectedVehicleNumber}
+                        onChange={(e) => {
+                          setSearch(e.target.value);
+                          setVehicleId("");
+                          setVehicleNumber("");
+                          setShowList(true);
+                        }}
+                        onFocus={() => setShowList(true)}
+                      />
+                      {showList && (
+                        <div className="absolute z-20 w-full bg-popover text-popover-foreground border border-border rounded-lg mt-1 max-h-48 overflow-y-auto shadow-lg">
+                          {vehicles
+                            .filter(v =>
+                              !search ||
+                              v.vehicle_number
+                                ?.toLowerCase()
+                                .includes(search.toLowerCase())
+                            )
+                            .map((vehicle) => (
+                              <div
+                                key={vehicle.vehicle_id}
+                                className="p-3 hover:bg-accent hover:text-accent-foreground cursor-pointer border-b border-border/60 last:border-b-0"
+                                onClick={() => {
+                                  setVehicleId(vehicle.vehicle_id);
+                                  setVehicleNumber(vehicle.vehicle_number);
+                                  setSearch(vehicle.vehicle_number);
+                                  setShowList(false);
+                                }}
+                              >
+                                {vehicle.vehicle_number}
+                              </div>
+                            ))}
+                        </div>
+                      )}
                     </div>
+                  </div>
 
-                    {/* MAINTENANCE TYPE */}
+                  {/* MAINTENANCE TYPE */}
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-1">
+                      Maintenance Type *
+                    </label>
+                    <select
+                      className="w-full h-11 rounded-md border border-border bg-background px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      value={maintenanceType}
+                      onChange={(e) => handleMaintenanceTypeChange(e.target.value)}
+                    >
+                      <option value="">Select Type</option>
+                      {maintenanceTypes.map((type) => (
+                        <option key={type.value} value={type.value}>
+                          {type.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* CATEGORY */}
+                  {maintenanceType && (
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Maintenance Type *
+                      <label className="block text-sm font-medium text-foreground mb-1">
+                        Category *
                       </label>
                       <select
-                        className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        value={maintenanceType}
-                        onChange={(e) => handleMaintenanceTypeChange(e.target.value)}
+                        className="w-full h-11 rounded-md border border-border bg-background px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        value={category}
+                        onChange={(e) => setCategory(e.target.value)}
                       >
-                        <option value="">Select Type</option>
-                        {maintenanceTypes.map((type) => (
-                          <option key={type.value} value={type.value}>
-                            {type.label}
+                        <option value="">Select Category</option>
+                        {getCategoryOptions(maintenanceType).map((cat) => (
+                          <option key={cat} value={cat}>
+                            {cat}
                           </option>
                         ))}
                       </select>
                     </div>
+                  )}
+                </div>
+              </div>
 
-                    {/* CATEGORY */}
-                    {maintenanceType && (
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Category *
-                        </label>
-                        <select
-                          className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                          value={category}
-                          onChange={(e) => setCategory(e.target.value)}
-                        >
-                          <option value="">Select Category</option>
-                          {getCategoryOptions(maintenanceType).map((cat) => (
-                            <option key={cat} value={cat}>
-                              {cat}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    )}
+              {/* SERVICE DETAILS SECTION */}
+              <div className="bg-info-muted border border-info-muted p-4 rounded-lg">
+                <h3 className="text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wide">
+                  Service Details
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* SERVICE DATE */}
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-1">
+                      Service Date *
+                    </label>
+                    <input
+                      type="date"
+                      className="w-full h-11 rounded-md border border-border bg-background px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      value={serviceDate}
+                      onChange={(e) => setServiceDate(e.target.value)}
+                    />
+                  </div>
+
+                  {/* ODOMETER KM */}
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-1">
+                      Odometer (KM)
+                    </label>
+                    <input
+                      type="number"
+                      placeholder="Current reading"
+                      className="w-full h-11 rounded-md border border-border bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      value={odometerKm}
+                      onChange={(e) => setOdometerKm(e.target.value)}
+                    />
+                  </div>
+
+                  {/* NEXT DUE KM */}
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-1">
+                      Next Due KM
+                    </label>
+                    <input
+                      type="number"
+                      placeholder="Next service at KM"
+                      className="w-full h-11 rounded-md border border-border bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      value={nextDueKm}
+                      onChange={(e) => setNextDueKm(e.target.value)}
+                    />
+                  </div>
+
+                  {/* NEXT DUE DATE */}
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-1">
+                      Next Due Date
+                    </label>
+                    <input
+                      type="date"
+                      className="w-full h-11 rounded-md border border-border bg-background px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      value={nextDueDate}
+                      onChange={(e) => setNextDueDate(e.target.value)}
+                    />
+                  </div>
+
+                  {/* COST */}
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-1">
+                      Cost (₹)
+                    </label>
+                    <input
+                      type="number"
+                      placeholder="Enter cost"
+                      className="w-full h-11 rounded-md border border-border bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      value={cost}
+                      onChange={(e) => setCost(e.target.value)}
+                    />
                   </div>
                 </div>
+              </div>
 
-                {/* SERVICE DETAILS SECTION */}
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <h3 className="text-sm font-medium text-gray-700 mb-3 uppercase tracking-wide">
-                    Service Details
+              {/* TYPE-SPECIFIC FIELDS */}
+              {maintenanceType === "TYRE" && (
+                <div className="bg-success-muted border border-success-muted p-4 rounded-lg">
+                  <h3 className="text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wide">
+                    Tyre Details
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* SERVICE DATE */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Service Date *
+                      <label className="block text-sm font-medium text-foreground mb-1">
+                        Tyre Serial Number
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Enter serial number"
+                        className="w-full h-11 rounded-md border border-border bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        value={tyreSerialNumber}
+                        onChange={(e) => setTyreSerialNumber(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-foreground mb-1">
+                        Tyre Position
+                      </label>
+                      <select
+                        className="w-full h-11 rounded-md border border-border bg-background px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        value={tyrePosition}
+                        onChange={(e) => setTyrePosition(e.target.value)}
+                      >
+                        <option value="">Select Position</option>
+                        {tyrePositions.map((pos) => (
+                          <option key={pos} value={pos}>
+                            {pos}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {maintenanceType === "COMPLIANCE" && (
+                <div className="bg-warning-muted border border-warning-muted p-4 rounded-lg">
+                  <h3 className="text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wide">
+                    Compliance Details
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-foreground mb-1">
+                        Valid From
                       </label>
                       <input
                         type="date"
-                        className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        value={serviceDate}
-                        onChange={(e) => setServiceDate(e.target.value)}
+                        className="w-full h-11 rounded-md border border-border bg-background px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        value={validFrom}
+                        onChange={(e) => setValidFrom(e.target.value)}
                       />
                     </div>
-
-                    {/* ODOMETER KM */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Odometer (KM)
-                      </label>
-                      <input
-                        type="number"
-                        placeholder="Current reading"
-                        className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        value={odometerKm}
-                        onChange={(e) => setOdometerKm(e.target.value)}
-                      />
-                    </div>
-
-                    {/* NEXT DUE KM */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Next Due KM
-                      </label>
-                      <input
-                        type="number"
-                        placeholder="Next service at KM"
-                        className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        value={nextDueKm}
-                        onChange={(e) => setNextDueKm(e.target.value)}
-                      />
-                    </div>
-
-                    {/* NEXT DUE DATE */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Next Due Date
+                      <label className="block text-sm font-medium text-foreground mb-1">
+                        Valid Upto
                       </label>
                       <input
                         type="date"
-                        className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        value={nextDueDate}
-                        onChange={(e) => setNextDueDate(e.target.value)}
+                        className="w-full h-11 rounded-md border border-border bg-background px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        value={validUpto}
+                        onChange={(e) => setValidUpto(e.target.value)}
                       />
                     </div>
+                  </div>
+                </div>
+              )}
 
-                    {/* COST */}
+              {maintenanceType === "BREAKDOWN" && (
+                <div className="bg-destructive-muted border border-destructive-muted p-4 rounded-lg">
+                  <h3 className="text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wide">
+                    Breakdown Details
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Cost (₹)
+                      <label className="block text-sm font-medium text-foreground mb-1">
+                        Breakdown Location
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Enter location"
+                        className="w-full h-11 rounded-md border border-border bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        value={breakdownLocation}
+                        onChange={(e) => setBreakdownLocation(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-foreground mb-1">
+                        Downtime Hours
                       </label>
                       <input
                         type="number"
-                        placeholder="Enter cost"
-                        className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        value={cost}
-                        onChange={(e) => setCost(e.target.value)}
+                        placeholder="Hours of downtime"
+                        className="w-full h-11 rounded-md border border-border bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        value={downtimeHours}
+                        onChange={(e) => setDowntimeHours(e.target.value)}
                       />
                     </div>
                   </div>
                 </div>
+              )}
 
-                {/* TYPE-SPECIFIC FIELDS */}
-                {maintenanceType === "TYRE" && (
-                  <div className="bg-green-50 p-4 rounded-lg">
-                    <h3 className="text-sm font-medium text-gray-700 mb-3 uppercase tracking-wide">
-                      Tyre Details
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Tyre Serial Number
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="Enter serial number"
-                          className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                          value={tyreSerialNumber}
-                          onChange={(e) => setTyreSerialNumber(e.target.value)}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Tyre Position
-                        </label>
-                        <select
-                          className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                          value={tyrePosition}
-                          onChange={(e) => setTyrePosition(e.target.value)}
-                        >
-                          <option value="">Select Position</option>
-                          {tyrePositions.map((pos) => (
-                            <option key={pos} value={pos}>
-                              {pos}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-                )}
+              {/* REMARKS */}
+              <div className="bg-muted/30 border border-border p-4 rounded-lg">
+                <label className="block text-sm font-medium text-foreground mb-1">
+                  Remarks
+                </label>
+                <textarea
+                  placeholder="Additional remarks or notes"
+                  className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  rows="3"
+                  value={remarks}
+                  onChange={(e) => setRemarks(e.target.value)}
+                />
+              </div>
 
-                {maintenanceType === "COMPLIANCE" && (
-                  <div className="bg-yellow-50 p-4 rounded-lg">
-                    <h3 className="text-sm font-medium text-gray-700 mb-3 uppercase tracking-wide">
-                      Compliance Details
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Valid From
-                        </label>
-                        <input
-                          type="date"
-                          className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                          value={validFrom}
-                          onChange={(e) => setValidFrom(e.target.value)}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Valid Upto
-                        </label>
-                        <input
-                          type="date"
-                          className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                          value={validUpto}
-                          onChange={(e) => setValidUpto(e.target.value)}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {maintenanceType === "BREAKDOWN" && (
-                  <div className="bg-red-50 p-4 rounded-lg">
-                    <h3 className="text-sm font-medium text-gray-700 mb-3 uppercase tracking-wide">
-                      Breakdown Details
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Breakdown Location
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="Enter location"
-                          className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                          value={breakdownLocation}
-                          onChange={(e) => setBreakdownLocation(e.target.value)}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Downtime Hours
-                        </label>
-                        <input
-                          type="number"
-                          placeholder="Hours of downtime"
-                          className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                          value={downtimeHours}
-                          onChange={(e) => setDowntimeHours(e.target.value)}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* REMARKS */}
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Remarks
-                  </label>
-                  <textarea
-                    placeholder="Additional remarks or notes"
-                    className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    rows="3"
-                    value={remarks}
-                    onChange={(e) => setRemarks(e.target.value)}
-                  />
-                </div>
-
-                {/* SUBMIT BUTTON */}
-                <div className="pt-4">
-                  <button
-                    onClick={handleSubmit}
-                    disabled={loading}
-                    className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium text-lg transition-colors"
-                  >
-                    {loading ? "Saving..." : "Save Maintenance Entry"}
-                  </button>
-                </div>
+              {/* SUBMIT BUTTON */}
+              <div className="pt-4">
+                <button
+                  onClick={handleSubmit}
+                  disabled={loading}
+                  className="w-full h-11 rounded-md bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 disabled:opacity-60 disabled:pointer-events-none"
+                >
+                  {loading ? "Saving..." : "Save Maintenance Entry"}
+                </button>
               </div>
             </div>
           </div>
+        </div>
 
-          {/* RIGHT CARD - RECENT ENTRIES & ALERTS */}
-          <div className="space-y-4 overflow-hidden flex flex-col">
-            {/* ALERTS */}
-            {alerts.length > 0 && (
-              <div className="bg-white rounded-xl border shadow-sm p-4 flex-shrink-0">
-                <h3 className="text-lg font-semibold mb-3 text-red-600">
-                  🚨 Maintenance Alerts
-                </h3>
-                <div className="space-y-2 max-h-32 overflow-y-auto">
-                  {alerts.map((alert) => (
-                    <div key={alert.alert_id} className="border-l-4 border-red-500 bg-red-50 p-3 rounded">
-                      <p className="font-medium text-sm">{alert.vehicle_number}</p>
-                      <p className="text-xs text-gray-600">{alert.alert_message}</p>
-                      <p className="text-xs text-gray-500">
-                        {new Date(alert.alert_date).toLocaleDateString()}
-                      </p>
-                    </div>
-                  ))}
-                </div>
+        {/* RIGHT CARD - RECENT ENTRIES & ALERTS */}
+        <div className="space-y-4 flex flex-col">
+          {/* ALERTS */}
+          {alerts.length > 0 && (
+            <div className="bg-card rounded-xl border border-border p-4 flex-shrink-0">
+              <h3 className="text-base font-semibold mb-3 text-destructive">
+                🚨 Maintenance Alerts
+              </h3>
+              <div className="space-y-2 max-h-32 overflow-y-auto">
+                {alerts.map((alert) => (
+                  <div
+                    key={alert.alert_id}
+                    className="border border-destructive-muted bg-destructive-muted p-3 rounded"
+                    style={{ borderLeftWidth: 4, borderLeftColor: 'var(--destructive)' }}
+                  >
+                    <p className="font-medium text-sm text-foreground">{alert.vehicle_number}</p>
+                    <p className="text-xs text-muted-foreground">{alert.alert_message}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(alert.alert_date).toLocaleDateString()}
+                    </p>
+                  </div>
+                ))}
               </div>
-            )}
+            </div>
+          )}
 
-            {/* RECENT ENTRIES */}
-            <div className="bg-white rounded-xl border shadow-sm flex-1 flex flex-col overflow-hidden">
-              <div className="p-4 border-b bg-gray-50 flex-shrink-0">
-                <h3 className="text-lg font-semibold text-gray-800">
-                  📋 Recent Maintenance Entries
-                </h3>
-              </div>
+          {/* RECENT ENTRIES */}
+          <div className="bg-card rounded-xl border border-border flex-1 flex flex-col overflow-hidden">
+            <div className="p-4 border-b border-border bg-muted/30 flex-shrink-0">
+              <h3 className="text-base font-semibold text-foreground">
+                📋 Recent Maintenance Entries
+              </h3>
+            </div>
 
-              <div className="flex-1 overflow-y-auto p-4">
-                <div className="space-y-3">
-                  {recentEntries.length === 0 ? (
-                    <div className="text-center py-8">
-                      <p className="text-gray-500">No recent entries</p>
-                      <p className="text-sm text-gray-400">Maintenance records will appear here</p>
-                    </div>
-                  ) : (
-                    recentEntries.map((entry) => (
-                      <div key={entry.maintenance_id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                        <div className="flex justify-between items-start mb-2">
-                          <div className="flex-1 h-screen overflow-hidden">
-                            <p className="font-semibold text-gray-800">{entry.vehicle_number}</p>
-                            <p className="text-sm text-blue-600 capitalize font-medium">
-                              {entry.maintenance_type} {entry.category && `- ${entry.category}`}
-                            </p>
-                          </div>
-                          <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                            {new Date(entry.service_date).toLocaleDateString()}
-                          </span>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-2 text-sm">
-                          {entry.odometer_km && (
-                            <div className="text-gray-600">
-                              <span className="font-medium">Odometer:</span> {entry.odometer_km} KM
-                            </div>
-                          )}
-                          {entry.cost && (
-                            <div className="text-gray-600">
-                              <span className="font-medium">Cost:</span> ₹{entry.cost}
-                            </div>
-                          )}
-                          {entry.next_due_date && (
-                            <div className="text-gray-600 col-span-2">
-                              <span className="font-medium">Next Due:</span> {new Date(entry.next_due_date).toLocaleDateString()}
-                            </div>
-                          )}
-                          {entry.valid_upto && (
-                            <div className="text-red-600 col-span-2 font-medium">
-                              <span className="font-medium">Valid Upto:</span> {new Date(entry.valid_upto).toLocaleDateString()}
-                            </div>
-                          )}
-                        </div>
-
-                        {entry.remarks && (
-                          <p className="text-sm text-gray-500 italic mt-2 border-t pt-2">
-                            {entry.remarks}
+            <div className="flex-1 overflow-y-auto p-4" style={{ maxHeight: '65vh' }}>
+              <div className="space-y-3">
+                {recentEntries.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground">No recent entries</p>
+                    <p className="text-sm text-muted-foreground">Maintenance records will appear here</p>
+                  </div>
+                ) : (
+                  recentEntries.map((entry) => (
+                    <div key={entry.maintenance_id} className="border border-border rounded-lg p-4 bg-card hover:bg-muted/20 transition-colors">
+                      <div className="flex justify-between items-start mb-2">
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-foreground truncate">{entry.vehicle_number}</p>
+                          <p className="text-sm text-info capitalize font-medium truncate">
+                            {entry.maintenance_type} {entry.category && `- ${entry.category}`}
                           </p>
+                        </div>
+                        <span className="text-xs text-muted-foreground bg-muted/30 border border-border px-2 py-1 rounded">
+                          {new Date(entry.service_date).toLocaleDateString()}
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2 text-sm">
+                        {entry.odometer_km && (
+                          <div className="text-muted-foreground">
+                            <span className="font-medium">Odometer:</span> {entry.odometer_km} KM
+                          </div>
+                        )}
+                        {entry.cost && (
+                          <div className="text-muted-foreground">
+                            <span className="font-medium">Cost:</span> ₹{entry.cost}
+                          </div>
+                        )}
+                        {entry.next_due_date && (
+                          <div className="text-muted-foreground col-span-2">
+                            <span className="font-medium">Next Due:</span> {new Date(entry.next_due_date).toLocaleDateString()}
+                          </div>
+                        )}
+                        {entry.valid_upto && (
+                          <div className="text-destructive col-span-2 font-medium">
+                            <span className="font-medium">Valid Upto:</span> {new Date(entry.valid_upto).toLocaleDateString()}
+                          </div>
                         )}
                       </div>
-                    ))
-                  )}
-                </div>
+
+                      {entry.remarks && (
+                        <p className="text-sm text-muted-foreground italic mt-2 border-t border-border pt-2">
+                          {entry.remarks}
+                        </p>
+                      )}
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           </div>

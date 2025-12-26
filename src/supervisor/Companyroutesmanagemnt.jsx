@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { MapPin, Plus, Edit, Trash2, Clock, Car, Building, Activity } from "lucide-react";
+import { MapPin, Plus, Edit, Trash2, Clock, Car, Activity } from "lucide-react";
 
 const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5002";
 const API_BASE_URL = BASE_URL.endsWith("/api") ? BASE_URL : `${BASE_URL}/api`;
@@ -250,343 +250,346 @@ export function Companyroutesmanagemnt() {
   };
 
   return (
-    <div className="h-full flex flex-col p-6">
-      <div className="flex-1 overflow-hidden">
-        <div className="h-full grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* LEFT CARD - ROUTE LIST */}
-          <div className="lg:col-span-2 bg-white rounded-xl border shadow-sm overflow-hidden flex flex-col">
-            <div className="p-6 border-b bg-gray-50 flex justify-between items-center">
-              <h2 className="text-xl font-semibold text-gray-800">
-                🗺️ Company Routes ({routes.length})
-              </h2>
-              <button
-                onClick={() => setShowForm(true)}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
-              >
-                <Plus size={16} />
-                New Route
-              </button>
-            </div>
-
-            <div className="flex-1 overflow-y-auto p-6">
-              <div className="space-y-4">
-                {routes.map((route) => (
-                  <div key={route.route_id} className="border rounded-lg p-4 hover:bg-gray-50">
-                    <div className="flex justify-between items-start mb-3">
-                      <div>
-                        <h3 className="font-semibold text-gray-800">{route.route_name}</h3>
-                        <p className="text-sm text-gray-600">
-                          {route.stops?.length || 0} stops • {route.vehicles?.length || 0} vehicles
-                        </p>
-                        {route.start_time && route.end_time && (
-                          <p className="text-sm text-gray-500 flex items-center gap-1 mt-1">
-                            <Clock size={14} />
-                            {route.start_time} - {route.end_time}
-                          </p>
-                        )}
-                      </div>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => fetchActivityLog(route.route_id)}
-                          className="p-2 text-gray-600 hover:bg-gray-100 rounded"
-                          title="View Activity Log"
-                        >
-                          <Activity size={16} />
-                        </button>
-                        <button
-                          onClick={() => handleEdit(route)}
-                          className="p-2 text-blue-600 hover:bg-blue-50 rounded"
-                          title="Edit Route"
-                        >
-                          <Edit size={16} />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(route.route_id, route.route_name)}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded"
-                          title="Delete Route"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="text-sm text-gray-600">
-                      <div className="mb-2">
-                        <strong>Stops:</strong>
-                        {route.stops?.map((stop, idx) => (
-                          <span key={idx} className="ml-2 px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">
-                            {stop.stop_name}
-                          </span>
-                        ))}
-                      </div>
-                      <div>
-                        <strong>Vehicles:</strong>
-                        {route.vehicles?.map((vehicle, idx) => (
-                          <span key={idx} className="ml-2 px-2 py-1 bg-green-100 text-green-800 rounded text-xs">
-                            {vehicle.vehicle_number}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-
-                {routes.length === 0 && (
-                  <div className="text-center py-8 text-gray-500">
-                    No routes created yet. Click "New Route" to get started.
-                  </div>
-                )}
-              </div>
-            </div>
+    <div className="w-full max-w-7xl space-y-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+        {/* LEFT CARD - ROUTE LIST */}
+        <div className="lg:col-span-2 bg-card rounded-xl border border-border overflow-hidden">
+          <div className="p-4 sm:p-6 border-b border-border bg-muted/30 flex items-center justify-between gap-3">
+            <h2 className="text-lg sm:text-xl font-semibold tracking-tight text-foreground">
+              🗺️ Company Routes ({routes.length})
+            </h2>
+            <button
+              onClick={() => setShowForm(true)}
+              className="h-9 sm:h-10 inline-flex items-center gap-2 rounded-md bg-primary px-3 sm:px-4 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+            >
+              <Plus size={16} />
+              <span className="hidden sm:inline">New Route</span>
+              <span className="sm:hidden">New</span>
+            </button>
           </div>
 
-          {/* RIGHT CARD - FORM */}
-          {(showForm || showActivityLog) && (
-            <div className="bg-white rounded-xl border shadow-sm overflow-hidden flex flex-col">
-              <div className="p-6 border-b bg-gray-50 flex justify-between items-center">
-                <h2 className="text-xl font-semibold text-gray-800">
-                  {showActivityLog ? "📋 Activity Log" : editingRoute ? "✏️ Edit Route" : "➕ Create Route"}
-                </h2>
-                <button
-                  onClick={() => {
-                    setShowForm(false);
-                    setShowActivityLog(false);
-                    resetForm();
-                  }}
-                  className="text-gray-500 hover:text-gray-700"
-                >
-                  ✕
-                </button>
-              </div>
-
-              <div className="flex-1 overflow-y-auto p-6">
-                {showActivityLog ? (
-                  <div className="space-y-3">
-                    {activityLog.map((log) => (
-                      <div key={log.log_id} className="border-l-4 border-blue-500 pl-4 py-2">
-                        <p className="text-sm font-medium text-gray-800">{log.activity_type}</p>
-                        <p className="text-sm text-gray-600">{log.description}</p>
-                        <p className="text-xs text-gray-500 mt-1">
-                          {new Date(log.created_at).toLocaleString()}
+          <div className="p-4 sm:p-6">
+            <div className="space-y-4">
+              {routes.map((route) => (
+                <div key={route.route_id} className="border border-border rounded-lg p-4 bg-card hover:bg-muted/20 transition-colors">
+                  <div className="flex justify-between items-start mb-3">
+                    <div>
+                      <h3 className="font-semibold text-foreground">{route.route_name}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {route.stops?.length || 0} stops • {route.vehicles?.length || 0} vehicles
+                      </p>
+                      {route.start_time && route.end_time && (
+                        <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
+                          <Clock size={14} />
+                          {route.start_time} - {route.end_time}
                         </p>
-                      </div>
-                    ))}
-                    {activityLog.length === 0 && (
-                      <p className="text-gray-500 text-center">No activity recorded</p>
-                    )}
-                  </div>
-                ) : (
-                  <div className="space-y-6">
-                    {/* BASIC INFO */}
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Company *
-                        </label>
-                        <select
-                          value={formData.company_id}
-                          onChange={(e) => setFormData(prev => ({ ...prev, company_id: e.target.value }))}
-                          className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500"
-                        >
-                          <option value="">Select Company</option>
-                          {companies.map((company) => (
-                            <option key={company.company_id} value={company.company_id}>
-                              {company.company_name}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Route Name *
-                        </label>
-                        <input
-                          type="text"
-                          value={formData.route_name}
-                          onChange={(e) => setFormData(prev => ({ ...prev, route_name: e.target.value }))}
-                          className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500"
-                          placeholder="e.g., Morning Route to Tech Park"
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Start Time
-                          </label>
-                          <input
-                            type="time"
-                            value={formData.start_time}
-                            onChange={(e) => setFormData(prev => ({ ...prev, start_time: e.target.value }))}
-                            className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            End Time
-                          </label>
-                          <input
-                            type="time"
-                            value={formData.end_time}
-                            onChange={(e) => setFormData(prev => ({ ...prev, end_time: e.target.value }))}
-                            className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500"
-                          />
-                        </div>
-                      </div>
+                      )}
                     </div>
-
-                    {/* STOPS */}
-                    <div className="border-t pt-6">
-                      <h3 className="text-lg font-medium text-gray-800 mb-4 flex items-center gap-2">
-                        <MapPin size={20} />
-                        Route Stops ({formData.stops.length})
-                      </h3>
-
-                      {/* Add Stop Form */}
-                      <div className="bg-gray-50 p-4 rounded-lg mb-4 space-y-3">
-                        <div className="grid grid-cols-2 gap-3">
-                          <input
-                            type="text"
-                            placeholder="Stop Name"
-                            value={stopForm.stop_name}
-                            onChange={(e) => setStopForm(prev => ({ ...prev, stop_name: e.target.value }))}
-                            className="border border-gray-300 rounded p-2"
-                          />
-                          <input
-                            type="time"
-                            placeholder="Expected Time"
-                            value={stopForm.expected_time}
-                            onChange={(e) => setStopForm(prev => ({ ...prev, expected_time: e.target.value }))}
-                            className="border border-gray-300 rounded p-2"
-                          />
-                        </div>
-                        <div className="grid grid-cols-3 gap-3">
-                          <input
-                            type="number"
-                            step="0.0001"
-                            placeholder="Latitude"
-                            value={stopForm.lat}
-                            onChange={(e) => setStopForm(prev => ({ ...prev, lat: e.target.value }))}
-                            className="border border-gray-300 rounded p-2"
-                          />
-                          <input
-                            type="number"
-                            step="0.0001"
-                            placeholder="Longitude"
-                            value={stopForm.lng}
-                            onChange={(e) => setStopForm(prev => ({ ...prev, lng: e.target.value }))}
-                            className="border border-gray-300 rounded p-2"
-                          />
-                          <input
-                            type="number"
-                            placeholder="Radius (m)"
-                            value={stopForm.radius}
-                            onChange={(e) => setStopForm(prev => ({ ...prev, radius: e.target.value }))}
-                            className="border border-gray-300 rounded p-2"
-                          />
-                        </div>
-                        <button
-                          onClick={addStop}
-                          className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700"
-                        >
-                          Add Stop
-                        </button>
-                      </div>
-
-                      {/* Stops List */}
-                      <div className="space-y-2">
-                        {formData.stops.map((stop, index) => (
-                          <div key={index} className="flex justify-between items-center bg-blue-50 p-3 rounded">
-                            <div>
-                              <span className="font-medium">{stop.stop_name}</span>
-                              <span className="text-sm text-gray-600 ml-2">
-                                ({stop.lat}, {stop.lng}) • {stop.radius}m • {stop.expected_time}
-                              </span>
-                            </div>
-                            <button
-                              onClick={() => removeStop(index)}
-                              className="text-red-600 hover:text-red-800"
-                            >
-                              <Trash2 size={16} />
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* VEHICLES */}
-                    <div className="border-t pt-6">
-                      <h3 className="text-lg font-medium text-gray-800 mb-4 flex items-center gap-2">
-                        <Car size={20} />
-                        Assigned Vehicles ({formData.vehicles.length})
-                      </h3>
-
-                      {/* Vehicle Search */}
-                      <div className="relative mb-4">
-                        <input
-                          type="text"
-                          placeholder="Search vehicle number..."
-                          value={vehicleSearch}
-                          onChange={(e) => {
-                            setVehicleSearch(e.target.value);
-                            setShowVehicleList(true);
-                          }}
-                          onFocus={() => setShowVehicleList(true)}
-                          className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500"
-                        />
-                        {showVehicleList && (
-                          <div className="absolute z-20 w-full bg-white border border-gray-300 rounded-lg mt-1 max-h-48 overflow-y-auto shadow-lg">
-                            {vehicles
-                              .filter(v =>
-                                !vehicleSearch ||
-                                v.vehicle_number?.toLowerCase().includes(vehicleSearch.toLowerCase())
-                              )
-                              .map((vehicle) => (
-                                <div
-                                  key={vehicle.vehicle_id}
-                                  className="p-3 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-b-0"
-                                  onClick={() => addVehicle(vehicle)}
-                                >
-                                  {vehicle.vehicle_number}
-                                </div>
-                              ))}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Vehicles List */}
-                      <div className="space-y-2">
-                        {formData.vehicles.map((vehicle) => (
-                          <div key={vehicle.vehicle_id} className="flex justify-between items-center bg-green-50 p-3 rounded">
-                            <span className="font-medium">{vehicle.vehicle_number}</span>
-                            <button
-                              onClick={() => removeVehicle(vehicle.vehicle_id)}
-                              className="text-red-600 hover:text-red-800"
-                            >
-                              <Trash2 size={16} />
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* SUBMIT BUTTON */}
-                    <div className="border-t pt-6">
+                    <div className="flex gap-2">
                       <button
-                        onClick={handleSubmit}
-                        disabled={loading}
-                        className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                        onClick={() => fetchActivityLog(route.route_id)}
+                        className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-border bg-background text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                        title="View Activity Log"
                       >
-                        {loading ? "Saving..." : editingRoute ? "Update Route" : "Create Route"}
+                        <Activity size={16} />
+                      </button>
+                      <button
+                        onClick={() => handleEdit(route)}
+                        className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-info-muted bg-info-muted text-info hover:bg-info-muted/70"
+                        title="Edit Route"
+                      >
+                        <Edit size={16} />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(route.route_id, route.route_name)}
+                        className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-destructive-muted bg-destructive-muted text-destructive hover:bg-destructive-muted/70"
+                        title="Delete Route"
+                      >
+                        <Trash2 size={16} />
                       </button>
                     </div>
                   </div>
-                )}
-              </div>
+
+                  <div className="text-sm text-muted-foreground">
+                    <div className="mb-2">
+                      <strong>Stops:</strong>
+                      {route.stops?.map((stop, idx) => (
+                        <span key={idx} className="ml-2 inline-flex items-center rounded border border-info-muted bg-info-muted px-2 py-1 text-xs text-info">
+                          {stop.stop_name}
+                        </span>
+                      ))}
+                    </div>
+                    <div>
+                      <strong>Vehicles:</strong>
+                      {route.vehicles?.map((vehicle, idx) => (
+                        <span key={idx} className="ml-2 inline-flex items-center rounded border border-success-muted bg-success-muted px-2 py-1 text-xs text-success">
+                          {vehicle.vehicle_number}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              {routes.length === 0 && (
+                <div className="text-center py-10 text-muted-foreground">
+                  No routes created yet. Click "New Route" to get started.
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
+
+        {/* RIGHT CARD - FORM */}
+        {(showForm || showActivityLog) && (
+          <div className="bg-card rounded-xl border border-border overflow-hidden">
+            <div className="p-4 sm:p-6 border-b border-border bg-muted/30 flex items-center justify-between gap-3">
+              <h2 className="text-lg sm:text-xl font-semibold tracking-tight text-foreground">
+                {showActivityLog ? "📋 Activity Log" : editingRoute ? "✏️ Edit Route" : "➕ Create Route"}
+              </h2>
+              <button
+                onClick={() => {
+                  setShowForm(false);
+                  setShowActivityLog(false);
+                  resetForm();
+                }}
+                className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-border bg-background text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="p-4 sm:p-6">
+              {showActivityLog ? (
+                <div className="space-y-3">
+                  {activityLog.map((log) => (
+                    <div
+                      key={log.log_id}
+                      className="border border-info-muted bg-info-muted p-3 rounded-lg"
+                      style={{ borderLeftWidth: 4, borderLeftColor: 'var(--info)' }}
+                    >
+                      <p className="text-sm font-medium text-foreground">{log.activity_type}</p>
+                      <p className="text-sm text-muted-foreground">{log.description}</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {new Date(log.created_at).toLocaleString()}
+                      </p>
+                    </div>
+                  ))}
+                  {activityLog.length === 0 && (
+                    <p className="text-muted-foreground text-center">No activity recorded</p>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {/* BASIC INFO */}
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-foreground mb-1">
+                        Company *
+                      </label>
+                      <select
+                        value={formData.company_id}
+                        onChange={(e) => setFormData(prev => ({ ...prev, company_id: e.target.value }))}
+                        className="w-full h-11 rounded-md border border-border bg-background px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        <option value="">Select Company</option>
+                        {companies.map((company) => (
+                          <option key={company.company_id} value={company.company_id}>
+                            {company.company_name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-foreground mb-1">
+                        Route Name *
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.route_name}
+                        onChange={(e) => setFormData(prev => ({ ...prev, route_name: e.target.value }))}
+                        className="w-full h-11 rounded-md border border-border bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        placeholder="e.g., Morning Route to Tech Park"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-foreground mb-1">
+                          Start Time
+                        </label>
+                        <input
+                          type="time"
+                          value={formData.start_time}
+                          onChange={(e) => setFormData(prev => ({ ...prev, start_time: e.target.value }))}
+                          className="w-full h-11 rounded-md border border-border bg-background px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-foreground mb-1">
+                          End Time
+                        </label>
+                        <input
+                          type="time"
+                          value={formData.end_time}
+                          onChange={(e) => setFormData(prev => ({ ...prev, end_time: e.target.value }))}
+                          className="w-full h-11 rounded-md border border-border bg-background px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* STOPS */}
+                  <div className="border-t border-border pt-6">
+                    <h3 className="text-base font-semibold text-foreground mb-4 flex items-center gap-2">
+                      <MapPin size={20} />
+                      Route Stops ({formData.stops.length})
+                    </h3>
+
+                    {/* Add Stop Form */}
+                    <div className="bg-muted/30 border border-border p-4 rounded-lg mb-4 space-y-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <input
+                          type="text"
+                          placeholder="Stop Name"
+                          value={stopForm.stop_name}
+                          onChange={(e) => setStopForm(prev => ({ ...prev, stop_name: e.target.value }))}
+                          className="h-10 rounded-md border border-border bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground"
+                        />
+                        <input
+                          type="time"
+                          placeholder="Expected Time"
+                          value={stopForm.expected_time}
+                          onChange={(e) => setStopForm(prev => ({ ...prev, expected_time: e.target.value }))}
+                          className="h-10 rounded-md border border-border bg-background px-3 text-sm text-foreground"
+                        />
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <input
+                          type="number"
+                          step="0.0001"
+                          placeholder="Latitude"
+                          value={stopForm.lat}
+                          onChange={(e) => setStopForm(prev => ({ ...prev, lat: e.target.value }))}
+                          className="h-10 rounded-md border border-border bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground"
+                        />
+                        <input
+                          type="number"
+                          step="0.0001"
+                          placeholder="Longitude"
+                          value={stopForm.lng}
+                          onChange={(e) => setStopForm(prev => ({ ...prev, lng: e.target.value }))}
+                          className="h-10 rounded-md border border-border bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground"
+                        />
+                        <input
+                          type="number"
+                          placeholder="Radius (m)"
+                          value={stopForm.radius}
+                          onChange={(e) => setStopForm(prev => ({ ...prev, radius: e.target.value }))}
+                          className="h-10 rounded-md border border-border bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground"
+                        />
+                      </div>
+                      <button
+                        onClick={addStop}
+                        className="h-10 w-full rounded-md bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90"
+                      >
+                        Add Stop
+                      </button>
+                    </div>
+
+                    {/* Stops List */}
+                    <div className="space-y-2">
+                      {formData.stops.map((stop, index) => (
+                        <div key={index} className="flex items-start justify-between gap-3 border border-info-muted bg-info-muted p-3 rounded">
+                          <div className="min-w-0">
+                            <span className="font-medium text-foreground">{stop.stop_name}</span>
+                            <span className="text-sm text-muted-foreground ml-2">
+                              ({stop.lat}, {stop.lng}) • {stop.radius}m • {stop.expected_time}
+                            </span>
+                          </div>
+                          <button
+                            onClick={() => removeStop(index)}
+                            className="inline-flex h-9 w-9 flex-none items-center justify-center rounded-md border border-destructive-muted bg-destructive-muted text-destructive hover:bg-destructive-muted/70"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* VEHICLES */}
+                  <div className="border-t border-border pt-6">
+                    <h3 className="text-base font-semibold text-foreground mb-4 flex items-center gap-2">
+                      <Car size={20} />
+                      Assigned Vehicles ({formData.vehicles.length})
+                    </h3>
+
+                    {/* Vehicle Search */}
+                    <div className="relative mb-4">
+                      <input
+                        type="text"
+                        placeholder="Search vehicle number..."
+                        value={vehicleSearch}
+                        onChange={(e) => {
+                          setVehicleSearch(e.target.value);
+                          setShowVehicleList(true);
+                        }}
+                        onFocus={() => setShowVehicleList(true)}
+                        className="w-full h-11 rounded-md border border-border bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      />
+                      {showVehicleList && (
+                        <div className="absolute z-20 w-full bg-popover text-popover-foreground border border-border rounded-lg mt-1 max-h-48 overflow-y-auto shadow-lg">
+                          {vehicles
+                            .filter(v =>
+                              !vehicleSearch ||
+                              v.vehicle_number?.toLowerCase().includes(vehicleSearch.toLowerCase())
+                            )
+                            .map((vehicle) => (
+                              <div
+                                key={vehicle.vehicle_id}
+                                className="p-3 hover:bg-accent hover:text-accent-foreground cursor-pointer border-b border-border/60 last:border-b-0"
+                                onClick={() => addVehicle(vehicle)}
+                              >
+                                {vehicle.vehicle_number}
+                              </div>
+                            ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Vehicles List */}
+                    <div className="space-y-2">
+                      {formData.vehicles.map((vehicle) => (
+                        <div key={vehicle.vehicle_id} className="flex justify-between items-center border border-success-muted bg-success-muted p-3 rounded">
+                          <span className="font-medium text-foreground">{vehicle.vehicle_number}</span>
+                          <button
+                            onClick={() => removeVehicle(vehicle.vehicle_id)}
+                            className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-destructive-muted bg-destructive-muted text-destructive hover:bg-destructive-muted/70"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* SUBMIT BUTTON */}
+                  <div className="border-t border-border pt-6">
+                    <button
+                      onClick={handleSubmit}
+                      disabled={loading}
+                      className="w-full h-11 rounded-md bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 disabled:opacity-60 disabled:pointer-events-none"
+                    >
+                      {loading ? "Saving..." : editingRoute ? "Update Route" : "Create Route"}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

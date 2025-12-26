@@ -87,75 +87,172 @@ export default function SLAReports() {
      UI
   ========================= */
   if (loading) {
-    return <div className="p-8">Loading SLA data…</div>;
+    return <div className="py-10 text-sm text-muted-foreground">Loading SLA data…</div>;
   }
 
   return (
-    <div className="p-8 max-w-7xl">
-      <h1 className="text-3xl font-bold mb-2">SLA & Geofencing Reports</h1>
-      <p className="text-gray-600 mb-6">
-        Owner-level SLA compliance based on automated geofence arrival tracking
-      </p>
+    <div className="w-full max-w-7xl space-y-6">
+      <div className="space-y-2">
+        <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground">
+          SLA & Geofencing Reports
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          Owner-level SLA compliance based on automated geofence arrival tracking
+        </p>
+      </div>
 
       {/* ================= KPI SUMMARY ================= */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5 sm:gap-4">
         <Kpi title="Total Trips" value={summary.total} />
-        <Kpi title="On-Time" value={summary.onTime} color="emerald" />
-        <Kpi title="Late" value={summary.late} color="amber" />
-        <Kpi title="Missed" value={summary.missed} color="red" />
-        <Kpi title="SLA %" value={`${summary.sla}%`} color="blue" />
+        <Kpi title="On-Time" value={summary.onTime} color="success" />
+        <Kpi title="Late" value={summary.late} color="warning" />
+        <Kpi title="Missed" value={summary.missed} color="destructive" />
+        <Kpi title="SLA %" value={`${summary.sla}%`} color="primary" />
       </div>
 
       {/* ================= COMPANY SLA ================= */}
       <Section title="Company-wise SLA (Client Contracts)">
-        <Table
-          headers={['Company', 'Trips', 'On-Time', 'Late', 'Missed', 'SLA %']}
-          rows={companyWise.map(c => [
-            c.company,
-            c.total,
-            c.onTime,
-            c.late,
-            c.missed,
-            `${c.sla}%`,
-          ])}
-        />
+        <div className="space-y-3 md:hidden">
+          {companyWise.map((c) => (
+            <div key={c.company} className="rounded-xl border border-border bg-card p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-foreground truncate">{c.company}</p>
+                  <p className="text-xs text-muted-foreground">
+                    Trips:{' '}
+                    <span className="font-medium text-foreground tabular-nums">{c.total}</span>
+                  </p>
+                </div>
+                <div className="shrink-0 text-right">
+                  <p className="text-xs text-muted-foreground">SLA</p>
+                  <p className="text-sm font-semibold text-foreground tabular-nums">{c.sla}%</p>
+                </div>
+              </div>
+
+              <div className="mt-3 grid grid-cols-3 gap-2">
+                <MobileStat label="On-Time" value={c.onTime} tone="success" />
+                <MobileStat label="Late" value={c.late} tone="warning" />
+                <MobileStat label="Missed" value={c.missed} tone="destructive" />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="hidden md:block">
+          <Table
+            headers={['Company', 'Trips', 'On-Time', 'Late', 'Missed', 'SLA %']}
+            rows={companyWise.map(c => [
+              c.company,
+              c.total,
+              c.onTime,
+              c.late,
+              c.missed,
+              `${c.sla}%`,
+            ])}
+          />
+        </div>
       </Section>
 
       {/* ================= SLA BREACHES ================= */}
       <Section title="SLA Breaches (Owner Attention)">
-        <Table
-          headers={[
-            'Vehicle',
-            'Company',
-            'Shift',
-            'Status',
-            'Delay (min)',
-            'Supervisor Action',
-          ]}
-          rows={breaches.map(b => [
-            b.vehicles?.vehicle_number,
-            b.companies?.company_name,
-            b.company_shifts?.shift_name,
-            <StatusBadge status={b.status} />,
-            b.delay_minutes ?? '—',
-            b.action_taken || '—',
-          ])}
-        />
+        <div className="space-y-3 md:hidden">
+          {breaches.map((b, idx) => (
+            <div key={idx} className="rounded-xl border border-border bg-card p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-foreground truncate">
+                    {b.vehicles?.vehicle_number || '—'}
+                  </p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {b.companies?.company_name || '—'}
+                  </p>
+                </div>
+
+                <div className="shrink-0">
+                  <StatusBadge status={b.status} />
+                </div>
+              </div>
+
+              <div className="mt-3 grid grid-cols-1 gap-2">
+                <div className="grid grid-cols-2 gap-2">
+                  <MobileKV label="Shift" value={b.company_shifts?.shift_name || '—'} />
+                  <MobileKV label="Delay (min)" value={b.delay_minutes ?? '—'} tone={b.status === 'MISSED' ? 'destructive' : 'warning'} />
+                </div>
+                <MobileKV label="Supervisor Action" value={b.action_taken || '—'} />
+              </div>
+            </div>
+          ))}
+
+          {breaches.length === 0 && (
+            <div className="rounded-xl border border-border bg-card p-4 text-sm text-muted-foreground">
+              No breaches.
+            </div>
+          )}
+        </div>
+
+        <div className="hidden md:block">
+          <Table
+            headers={[
+              'Vehicle',
+              'Company',
+              'Shift',
+              'Status',
+              'Delay (min)',
+              'Supervisor Action',
+            ]}
+            rows={breaches.map(b => [
+              b.vehicles?.vehicle_number,
+              b.companies?.company_name,
+              b.company_shifts?.shift_name,
+              <StatusBadge status={b.status} />,
+              b.delay_minutes ?? '—',
+              b.action_taken || '—',
+            ])}
+          />
+        </div>
       </Section>
 
       {/* ================= VEHICLE SLA ================= */}
       <Section title="Vehicle-wise SLA Performance">
-        <Table
-          headers={['Vehicle', 'Trips', 'On-Time', 'Late', 'Missed', 'SLA %']}
-          rows={vehicleWise.map(v => [
-            v.vehicle,
-            v.total,
-            v.onTime,
-            v.late,
-            v.missed,
-            `${v.sla}%`,
-          ])}
-        />
+        <div className="space-y-3 md:hidden">
+          {vehicleWise.map((v) => (
+            <div key={v.vehicle} className="rounded-xl border border-border bg-card p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-foreground truncate">{v.vehicle}</p>
+                  <p className="text-xs text-muted-foreground">
+                    Trips:{' '}
+                    <span className="font-medium text-foreground tabular-nums">{v.total}</span>
+                  </p>
+                </div>
+                <div className="shrink-0 text-right">
+                  <p className="text-xs text-muted-foreground">SLA</p>
+                  <p className="text-sm font-semibold text-foreground tabular-nums">{v.sla}%</p>
+                </div>
+              </div>
+
+              <div className="mt-3 grid grid-cols-3 gap-2">
+                <MobileStat label="On-Time" value={v.onTime} tone="success" />
+                <MobileStat label="Late" value={v.late} tone="warning" />
+                <MobileStat label="Missed" value={v.missed} tone="destructive" />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="hidden md:block">
+          <Table
+            headers={['Vehicle', 'Trips', 'On-Time', 'Late', 'Missed', 'SLA %']}
+            rows={vehicleWise.map(v => [
+              v.vehicle,
+              v.total,
+              v.onTime,
+              v.late,
+              v.missed,
+              `${v.sla}%`,
+            ])}
+          />
+        </div>
       </Section>
     </div>
   );
@@ -166,25 +263,49 @@ export default function SLAReports() {
 ========================= */
 function Kpi({ title, value, color = 'gray' }) {
   const colors = {
-    emerald: 'text-emerald-600',
-    amber: 'text-amber-600',
-    red: 'text-red-600',
-    blue: 'text-blue-600',
-    gray: 'text-gray-800',
+    success: 'text-success',
+    warning: 'text-warning',
+    destructive: 'text-destructive',
+    primary: 'text-primary',
+    emerald: 'text-success',
+    amber: 'text-warning',
+    red: 'text-destructive',
+    blue: 'text-primary',
+    gray: 'text-foreground',
   };
 
   return (
-    <div className="bg-white p-5 border rounded shadow-sm">
-      <p className="text-sm text-gray-500">{title}</p>
-      <p className={`text-2xl font-bold ${colors[color]}`}>{value}</p>
+    <div className="bg-card border border-border rounded-xl p-4 sm:p-5">
+      <p className="text-sm text-muted-foreground">{title}</p>
+      <p className={`text-2xl font-semibold tracking-tight tabular-nums ${colors[color] || colors.gray}`}>{value}</p>
     </div>
   );
 }
 
+function MobileKV({ label, value, tone = 'default' }) {
+  const tones = {
+    default: 'text-foreground',
+    success: 'text-success',
+    warning: 'text-warning',
+    destructive: 'text-destructive',
+  };
+
+  return (
+    <div className="rounded-lg border border-border bg-muted/20 px-3 py-2">
+      <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
+      <p className={`text-sm font-semibold tabular-nums ${tones[tone] || tones.default}`}>{value}</p>
+    </div>
+  );
+}
+
+function MobileStat({ label, value, tone = 'default' }) {
+  return <MobileKV label={label} value={value} tone={tone} />;
+}
+
 function Section({ title, children }) {
   return (
-    <div className="mt-8 bg-white p-6 border rounded shadow-sm">
-      <h2 className="text-xl font-semibold mb-4">{title}</h2>
+    <div className="mt-6 sm:mt-8 bg-card p-4 sm:p-6 border border-border rounded-xl">
+      <h2 className="text-lg sm:text-xl font-semibold mb-4 text-foreground">{title}</h2>
       {children}
     </div>
   );
@@ -192,11 +313,12 @@ function Section({ title, children }) {
 
 function Table({ headers, rows }) {
   return (
-    <table className="w-full text-sm">
-      <thead className="border-b">
+    <div className="w-full overflow-x-auto">
+      <table className="w-full text-sm">
+      <thead className="border-b border-border bg-muted/30">
         <tr>
           {headers.map(h => (
-            <th key={h} className="text-left py-3 px-4 font-semibold">
+            <th key={h} className="text-left py-3 px-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground whitespace-nowrap">
               {h}
             </th>
           ))}
@@ -204,28 +326,29 @@ function Table({ headers, rows }) {
       </thead>
       <tbody>
         {rows.map((r, i) => (
-          <tr key={i} className="border-b hover:bg-gray-50">
+          <tr key={i} className="border-b border-border hover:bg-muted/30">
             {r.map((c, j) => (
-              <td key={j} className="py-3 px-4">
+              <td key={j} className="py-3 px-4 text-foreground whitespace-nowrap">
                 {c}
               </td>
             ))}
           </tr>
         ))}
       </tbody>
-    </table>
+      </table>
+    </div>
   );
 }
 
 function StatusBadge({ status }) {
   const map = {
-    ON_TIME: 'bg-emerald-100 text-emerald-700',
-    LATE: 'bg-amber-100 text-amber-700',
-    MISSED: 'bg-red-100 text-red-700',
+    ON_TIME: 'bg-success-muted border border-success-muted text-success',
+    LATE: 'bg-warning-muted border border-warning-muted text-warning',
+    MISSED: 'bg-destructive-muted border border-destructive-muted text-destructive',
   };
 
   return (
-    <span className={`px-2 py-1 rounded text-xs font-semibold ${map[status]}`}>
+    <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-semibold ${map[status] || 'bg-muted border border-border text-foreground'}`}>
       {status}
     </span>
   );

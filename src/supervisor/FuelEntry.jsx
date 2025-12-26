@@ -114,20 +114,20 @@ export function FuelEntry() {
      UI
   ===================================== */
   return (
-    <div className="h-full overflow-y-auto p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
       {/* LEFT CARD */}
-      <div className="bg-white rounded-xl border p-6">
-        <h2 className="text-xl font-semibold mb-6">
-          ⛽ Record Fuel Entry
+      <div className="bg-card rounded-xl border border-border p-4 sm:p-6">
+        <h2 className="text-lg sm:text-xl font-semibold tracking-tight text-foreground mb-5">
+          Record Fuel Entry
         </h2>
 
         {/* VEHICLE */}
-        <label className="block text-sm mb-1">Vehicle</label>
+        <label className="block text-sm font-medium text-foreground mb-1">Vehicle</label>
         <div className="relative mb-4">
           <input
             type="text"
             placeholder="Search vehicle number..."
-            className="w-full border rounded-lg p-2"
+            className="w-full h-11 rounded-md border border-border bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             value={search || selectedVehicleNumber}
             onChange={(e) => {
               setSearch(e.target.value);
@@ -139,7 +139,7 @@ export function FuelEntry() {
 
           {showList && (
             <div
-              className="absolute z-10 w-full bg-white border rounded-lg mt-1 max-h-48 overflow-y-auto shadow"
+              className="absolute z-10 w-full bg-popover text-popover-foreground border border-border rounded-lg mt-1 max-h-48 overflow-y-auto shadow-lg"
               onMouseDown={(e) => e.preventDefault()}
             >
               {vehicles
@@ -152,7 +152,7 @@ export function FuelEntry() {
                 .map(v => (
                   <div
                     key={v.vehicle_id}
-                    className="px-3 py-2 cursor-pointer hover:bg-blue-50"
+                    className="px-3 py-2 cursor-pointer hover:bg-accent hover:text-accent-foreground"
                     onClick={() => {
                       setVehicleId(v.vehicle_id);
                       setSearch(v.vehicle_number);
@@ -167,54 +167,54 @@ export function FuelEntry() {
         </div>
 
         {/* ODOMETER */}
-        <label className="block text-sm mb-1">
+        <label className="block text-sm font-medium text-foreground mb-1">
           Odometer Reading (km)
         </label>
         <input
           type="number"
-          className="w-full border rounded-lg p-2 mb-4"
+          className="w-full h-11 rounded-md border border-border bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring mb-4"
           value={odometer}
           onChange={(e) => setOdometer(e.target.value)}
           placeholder="e.g. 123456"
         />
 
         {/* FUEL */}
-        <label className="block text-sm mb-1">
+        <label className="block text-sm font-medium text-foreground mb-1">
           Fuel Amount (Liters)
         </label>
         <input
           type="number"
-          className="w-full border rounded-lg p-2 mb-4"
+          className="w-full h-11 rounded-md border border-border bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring mb-4"
           value={fuel}
           onChange={(e) => setFuel(e.target.value)}
         />
 
         {/* PRICE */}
-        <label className="block text-sm mb-1">
+        <label className="block text-sm font-medium text-foreground mb-1">
           Fuel Price (₹ / Liter)
-          <span className="text-xs text-gray-400"> (optional)</span>
+          <span className="text-xs text-muted-foreground"> (optional)</span>
         </label>
         <input
           type="number"
-          className="w-full border rounded-lg p-2 mb-4"
+          className="w-full h-11 rounded-md border border-border bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring mb-4"
           value={price}
           onChange={(e) => setPrice(e.target.value)}
         />
 
         {/* COST */}
-        <label className="block text-sm mb-1">Total Cost (₹)</label>
+        <label className="block text-sm font-medium text-foreground mb-1">Total Cost (₹)</label>
         <input
           type="text"
-          className="w-full border rounded-lg p-2 mb-4 bg-gray-100"
+          className="w-full h-11 rounded-md border border-border bg-muted/30 px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring mb-4"
           value={totalCost}
           readOnly
         />
 
         {/* DATE */}
-        <label className="block text-sm mb-1">Date</label>
+        <label className="block text-sm font-medium text-foreground mb-1">Date</label>
         <input
           type="date"
-          className="w-full border rounded-lg p-2 mb-6"
+          className="w-full h-11 rounded-md border border-border bg-background px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring mb-6"
           value={date}
           onChange={(e) => setDate(e.target.value)}
         />
@@ -222,38 +222,44 @@ export function FuelEntry() {
         <button
           onClick={handleSubmit}
           disabled={loading}
-          className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold"
+          className="w-full h-11 rounded-md bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 disabled:opacity-60 disabled:pointer-events-none"
         >
           {loading ? "Saving..." : "Record Entry"}
         </button>
       </div>
 
       {/* RIGHT CARD */}
-      <div className="bg-white rounded-xl border p-6">
-        <h2 className="text-xl font-semibold mb-6">
-          🕒 Recent Entries
+      <div className="bg-card rounded-xl border border-border p-4 sm:p-6">
+        <h2 className="text-lg sm:text-xl font-semibold tracking-tight text-foreground mb-5">
+          Recent Entries
         </h2>
 
         {recentEntries.map((e) => (
           <div
             key={e.fuel_entry_id}
-            className="flex justify-between bg-gray-50 p-4 rounded-lg mb-3"
+            className="flex items-start justify-between gap-3 bg-muted/20 border border-border p-4 rounded-lg mb-3"
           >
             <div>
-              <p className="font-semibold">
+              <p className="font-semibold text-foreground">
                 {e.vehicles?.vehicle_number || "—"}
               </p>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-muted-foreground">
                 {e.fuel_quantity} L
               </p>
             </div>
             <div className="text-right">
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-muted-foreground">
                 {e.fuel_date}
               </p>
             </div>
           </div>
         ))}
+
+        {recentEntries.length === 0 && (
+          <div className="rounded-lg border border-border bg-muted/20 p-4 text-sm text-muted-foreground">
+            No recent entries.
+          </div>
+        )}
       </div>
     </div>
   );
