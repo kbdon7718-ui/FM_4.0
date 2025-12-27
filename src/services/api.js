@@ -119,6 +119,20 @@ export const getVehicles = async () => {
 };
 
 /* ================================
+   OWNER - ADD VEHICLE
+   Backend expects x-role: OWNER and x-owner-id header
+================================ */
+export const createVehicle = async (payload, ownerId) => {
+  const { data } = await apiClient.post('/vehicles', payload, {
+    headers: {
+      'x-role': 'OWNER',
+      'x-owner-id': ownerId,
+    },
+  });
+  return data;
+};
+
+/* ================================
    TELEMETRY (SUPERVISOR LIVE TRACKING)
 ================================ */
 export const getLatestTelemetry = async () => {
@@ -129,12 +143,45 @@ export const getLatestTelemetry = async () => {
 };
 
 /* ================================
+   SUPERVISOR - ASSIGN DRIVER
+================================ */
+export const assignDriver = async (payload) => {
+  const { data } = await apiClient.post('/assign-driver', payload);
+  return data;
+};
+
+/* ================================
    OWNER TELEMETRY (OWNER LIVE TRACKING)
 ================================ */
 export const getOwnerLatestTelemetry = async () => {
   const { data } = await apiClient.get(
     '/owner/live-tracking'
   );
+  return data;
+};
+
+/* ================================
+   FLEET - ASSIGN VEHICLE & SEND LOCATION
+   Fleet endpoints require x-role:FLEET and x-fleet-id/x-vehicle-id headers
+================================ */
+export const fleetAssignVehicle = async (vehicle_number, fleetId, vehicle_type) => {
+  const { data } = await apiClient.post('/fleet/assign-vehicle', { vehicle_number, vehicle_type }, {
+    headers: {
+      'x-role': 'FLEET',
+      'x-fleet-id': fleetId,
+    },
+  });
+  return data;
+};
+
+export const sendFleetLocation = async ({ vehicleId, fleetId, latitude, longitude, speed, ignition }) => {
+  const { data } = await apiClient.post('/fleet/location', { latitude, longitude, speed, ignition }, {
+    headers: {
+      'x-role': 'FLEET',
+      'x-fleet-id': fleetId,
+      'x-vehicle-id': vehicleId,
+    },
+  });
   return data;
 };
 

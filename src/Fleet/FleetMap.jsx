@@ -20,25 +20,82 @@ export default function FleetMap({ user }) {
      INIT MAP (ONCE)
   ========================= */
   useEffect(() => {
-    if (!window.mappls) {
-      setError('MapmyIndia SDK not loaded');
-      return;
-    }
+    let attempts = 0;
+
+    const waitForSDK = () => {
+      attempts += 1;
+      if (window.mappls) return Promise.resolve();
+      if (attempts > 5) return Promise.reject(new Error('Map SDK not available'));
+      return new Promise((resolve) => setTimeout(resolve, 1000)).then(waitForSDK);
+    };
 
     const container = document.getElementById('fleet-map');
     if (!container || mapRef.current) return;
 
-    // 🇮🇳 SAFE INDIA FALLBACK
-    const map = new window.mappls.Map(container, {
-      center: [28.6139, 77.2090], // Delhi
-      zoom: 6,
-    });
+    // If we have an assigned vehicle, try to fetch its last DB location
+    const init = async () => {
+      const isValid = (lat, lng) => {
+        if (lat == null || lng == null) return false;
+        if (Number.isNaN(Number(lat)) || Number.isNaN(Number(lng))) return false;
+        if (lat === 0 && lng === 0) return false;
+        if (lat < -90 || lat > 90) return false;
+        if (lng < -180 || lng > 180) return false;
+        return true;
+      };
 
-    mapRef.current = map;
+      let center = [28.6139, 77.2090]; // fallback Delhi
 
-    markerRef.current = new window.mappls.Marker({
-      map,
-    });
+      if (user?.vehicle_id) {
+        try {
+          const res = await fetch(`${API_BASE_URL}/fleet/last-location/${user.vehicle_id}`, {
+            headers: {
+              'x-role': 'FLEET',
+              'x-vehicle-id': user.vehicle_id,
+            },
+          });
+
+          if (res.ok) {
+            const d = await res.json();
+            if (isValid(d?.latitude, d?.longitude)) {
+              center = [d.latitude, d.longitude];
+              hasCenteredRef.current = true;
+            }
+          }
+        } catch (e) {
+          // ignore and fall back
+        }
+      } else if (navigator.geolocation) {
+        // try to use browser location for fleet user without assigned vehicle
+        try {
+          const pos = await new Promise((resolve, reject) =>
+            navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 })
+          );
+          if (isValid(pos.coords.latitude, pos.coords.longitude)) {
+            center = [pos.coords.latitude, pos.coords.longitude];
+            hasCenteredRef.current = true;
+          }
+        } catch (e) {
+          // ignore
+        }
+      }
+      const map = new window.mappls.Map(container, {
+        center,
+        zoom: hasCenteredRef.current ? 17 : 6,
+      });
+
+      mapRef.current = map;
+
+      try {
+        markerRef.current = new window.mappls.Marker({ map });
+      } catch (markerErr) {
+        console.warn('Map marker init failed', markerErr);
+        markerRef.current = null;
+      }
+    };
+
+    waitForSDK()
+      .then(init)
+      .catch(() => setError('Map SDK not loaded'));
   }, []);
 
   /* =========================
@@ -78,8 +135,11 @@ export default function FleetMap({ user }) {
      LIVE GPS TRACKING
   ========================= */
   useEffect(() => {
-    if (!navigator.geolocation || !mapRef.current) {
-      setError('Geolocation not supported');
+    // If map is not ready yet, do nothing
+    if (!mapRef.current) return;
+
+    // If browser doesn't support geolocation, silently skip live watch
+    if (!navigator.geolocation) {
       return;
     }
 

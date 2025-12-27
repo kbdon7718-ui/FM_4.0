@@ -21,7 +21,7 @@ export default function FleetSettings({ onVehicleAssigned }) {
 
     try {
     const res = await fetch(
-  `${API_BASE_URL}/assign-vehicle`,
+  `${API_BASE_URL}/fleet/assign-vehicle`,
   {
 
           method: 'POST',

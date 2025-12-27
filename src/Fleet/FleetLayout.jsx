@@ -38,6 +38,7 @@ export default function FleetLayout({ onLogout, user, theme, onThemeChange }) {
   const [distance, setDistance] = useState(0);
   const [distanceLoading, setDistanceLoading] = useState(false);
   const [distanceError, setDistanceError] = useState('');
+  const [driver, setDriver] = useState(null);
 
   useEffect(() => {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
@@ -127,6 +128,29 @@ useEffect(() => {
     clearInterval(interval);
   };
 }, [vehicle]);
+
+  /* =========================
+     FETCH CURRENT DRIVER FOR ASSIGNED VEHICLE
+  ========================= */
+  useEffect(() => {
+    if (!vehicle?.vehicle_id) {
+      setDriver(null);
+      return;
+    }
+
+    let cancelled = false;
+
+    fetch(`${API_BASE_URL}/assign-driver/current`)
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data) => {
+        if (cancelled) return;
+        const current = Array.isArray(data) ? data.find(d => d.vehicle_id === vehicle.vehicle_id) : null;
+        setDriver(current || null);
+      })
+      .catch(() => setDriver(null));
+
+    return () => { cancelled = true; };
+  }, [vehicle]);
 
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -293,6 +317,15 @@ useEffect(() => {
                       Vehicle:{' '}
                       <span className="font-semibold text-foreground">
                         {vehicle.vehicle_number}
+                      </span>
+                    </div>
+                  )}
+
+                  {driver?.driver_name && (
+                    <div className="text-sm text-muted-foreground">
+                      Driver:{' '}
+                      <span className="font-semibold text-foreground">
+                        {driver.driver_name}
                       </span>
                     </div>
                   )}
