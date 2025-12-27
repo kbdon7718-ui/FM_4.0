@@ -1,11 +1,6 @@
+
 import { useState } from 'react';
-
-const BASE_URL =
-  import.meta.env.VITE_API_URL || 'http://localhost:5002';
-
-const API_BASE_URL = BASE_URL.endsWith('/api')
-  ? BASE_URL
-  : `${BASE_URL}/api`;
+import { API_BASE_URL } from '../services/apiBase';
 
 
 export default function FleetSettings({ onVehicleAssigned }) {
@@ -15,38 +10,30 @@ export default function FleetSettings({ onVehicleAssigned }) {
 
   const submit = async () => {
     if (!vehicleNumber) return;
-
     setLoading(true);
     setError('');
-
     try {
-    const res = await fetch(
-  `${API_BASE_URL}/fleet/assign-vehicle`,
-  {
-
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-role': 'FLEET',
-            // ✅ TEMP fleet identity (until JWT)
-            'x-fleet-id': '11111111-1111-1111-1111-111111111111',
-          },
-          body: JSON.stringify({
-            vehicle_number: vehicleNumber,
-          }),
-        }
-      );
-
-      const data = await res.json();
-
+      const res = await fetch(`${API_BASE_URL}/fleet/assign-vehicle`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-role': 'FLEET',
+          //  TEMP fleet identity (until JWT)
+          'x-fleet-id': '11111111-1111-1111-1111-111111111111',
+        },
+        body: JSON.stringify({ vehicle_number: vehicleNumber }),
+      });
+      let data = {};
+      try {
+        data = await res.json();
+      } catch {}
       if (!res.ok) {
-        throw new Error(data.message || 'Failed to assign vehicle');
+        throw new Error(data.message || 'Failed to assign vehicle (server error)');
       }
-
       onVehicleAssigned(data);
       setVehicleNumber('');
     } catch (err) {
-      setError(err.message);
+      setError(err.message || 'Network error. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -69,7 +56,7 @@ export default function FleetSettings({ onVehicleAssigned }) {
       />
 
       {error && (
-        <div className="text-sm text-red-600">
+        <div className="text-sm text-red-600" role="alert">
           {error}
         </div>
       )}
@@ -78,8 +65,9 @@ export default function FleetSettings({ onVehicleAssigned }) {
         onClick={submit}
         disabled={loading}
         className="w-full h-11 rounded-md bg-blue-600 text-white text-sm font-medium shadow-sm hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+        aria-busy={loading}
       >
-        {loading ? 'Saving...' : 'Save Vehicle'}
+        {loading ? 'Saving…' : 'Save Vehicle'}
       </button>
     </div>
   );

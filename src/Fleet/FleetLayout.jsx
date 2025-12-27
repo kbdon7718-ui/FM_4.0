@@ -21,10 +21,7 @@ import {
 
 import { Switch } from '../components/ui/switch.jsx';
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5002';
-const API_BASE_URL = BASE_URL.endsWith('/api')
-  ? BASE_URL
-  : `${BASE_URL}/api`;
+import { API_BASE_URL } from '../services/apiBase';
 
 export default function FleetLayout({ onLogout, user, theme, onThemeChange }) {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -68,7 +65,9 @@ export default function FleetLayout({ onLogout, user, theme, onThemeChange }) {
     if (saved) {
       try {
         setVehicle(JSON.parse(saved));
-      } catch {}
+      } catch {
+        setVehicle(null);
+      }
     }
   }, []);
 
@@ -132,14 +131,13 @@ useEffect(() => {
   /* =========================
      FETCH CURRENT DRIVER FOR ASSIGNED VEHICLE
   ========================= */
-  useEffect(() => {
+  // Robust driver refresh function
+  const refreshDriver = () => {
     if (!vehicle?.vehicle_id) {
       setDriver(null);
       return;
     }
-
     let cancelled = false;
-
     fetch(`${API_BASE_URL}/assign-driver/current`)
       .then((res) => (res.ok ? res.json() : []))
       .then((data) => {
@@ -148,9 +146,9 @@ useEffect(() => {
         setDriver(current || null);
       })
       .catch(() => setDriver(null));
-
     return () => { cancelled = true; };
-  }, [vehicle]);
+  };
+  useEffect(refreshDriver, [vehicle]);
 
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -355,6 +353,7 @@ useEffect(() => {
                       onVehicleAssigned={(v) => {
                         setVehicle(v);
                         localStorage.setItem('assignedVehicle', JSON.stringify(v));
+                        refreshDriver();
                       }}
                       onLogout={onLogout}
                     />

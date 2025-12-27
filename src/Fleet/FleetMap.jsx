@@ -1,11 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
-const BASE_URL =
-  import.meta.env.VITE_API_URL || 'http://localhost:5002';
-
-const API_BASE_URL = BASE_URL.endsWith('/api')
-  ? BASE_URL
-  : `${BASE_URL}/api`;
+import { API_BASE_URL } from '../services/apiBase';
 
 export default function FleetMap({ user }) {
   const mapRef = useRef(null);
@@ -117,18 +112,20 @@ export default function FleetMap({ user }) {
           data?.longitude &&
           !hasCenteredRef.current
         ) {
-          markerRef.current.setPosition({
-            lat: data.latitude,
-            lng: data.longitude,
-          });
-
-          mapRef.current.setCenter([data.latitude, data.longitude]);
-          mapRef.current.setZoom(17);
-
-          hasCenteredRef.current = true;
+          try {
+            markerRef.current.setPosition({
+              lat: data.latitude,
+              lng: data.longitude,
+            });
+            mapRef.current.setCenter([data.latitude, data.longitude]);
+            mapRef.current.setZoom(17);
+            hasCenteredRef.current = true;
+          } catch (e) {
+            setError('Map marker error');
+          }
         }
       })
-      .catch(() => {});
+      .catch(() => setError('Failed to load last location'));
   }, [user]);
 
   /* =========================
