@@ -4,6 +4,7 @@
  */
 
 import { useEffect, useMemo, useState } from 'react';
+import api from '../services/api.js';
 
 export default function SLAReports() {
   const [logs, setLogs] = useState([]);
@@ -13,13 +14,19 @@ export default function SLAReports() {
      FETCH REAL DATA
   ========================= */
   useEffect(() => {
-    fetch('/api/arrival-logs')
-      .then((res) => res.ok ? res.json() : [])
-      .then((data) => {
-        setLogs(data || []);
+    const load = async () => {
+      try {
+        const data = await api.getArrivalLogs();
+        setLogs(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error('Arrival logs fetch error:', error);
+        setLogs([]);
+      } finally {
         setLoading(false);
-      })
-      .catch(() => setLoading(false));
+      }
+    };
+
+    load();
   }, []);
 
   /* =========================

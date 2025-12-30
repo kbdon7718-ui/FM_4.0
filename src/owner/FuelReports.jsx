@@ -13,8 +13,10 @@ export function FuelReports() {
 
   useEffect(() => {
     async function loadVehicles() {
-      const data = await api.getVehicles();
-      setVehicles(data);
+      const sessionRaw = localStorage.getItem('fm_session_v1');
+      const ownerId = sessionRaw ? JSON.parse(sessionRaw)?.user?.owner_id : null;
+      const data = ownerId ? await api.getOwnerVehicles(ownerId) : [];
+      setVehicles(Array.isArray(data) ? data : []);
     }
     loadVehicles();
   }, []);

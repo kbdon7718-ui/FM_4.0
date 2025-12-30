@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import api from '../services/api.js';
 
 const YEARS = Array.from(
   { length: 30 },
@@ -9,13 +10,6 @@ const STATES = [
   'MH','DL','KA','TN','GJ','RJ','UP','MP','PB','HR',
   'WB','BR','OD','CG','TS','AP','KL','GA','AS','JK'
 ];
-
-const BASE_URL =
-  import.meta.env.VITE_API_URL || 'http://localhost:5002';
-
-const API_BASE_URL = BASE_URL.endsWith('/api')
-  ? BASE_URL
-  : `${BASE_URL}/api`;
 
 export default function AddVehicle({ owner }) {
   const [form, setForm] = useState({
@@ -33,6 +27,28 @@ export default function AddVehicle({ owner }) {
 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
+  const [vehicles, setVehicles] = useState([]);
+  const [fetching, setFetching] = useState(false);
+  const [editId, setEditId] = useState(null);
+  const [editForm, setEditForm] = useState({});
+  const [editLoading, setEditLoading] = useState(false);
+  const [editMessage, setEditMessage] = useState('');
+  // Fetch vehicles
+  const fetchVehicles = async () => {
+    setFetching(true);
+    try {
+      const data = await api.getOwnerVehicles(owner?.owner_id);
+      setVehicles(data);
+    } catch (err) {
+      setMessage('❌ Failed to fetch vehicles');
+    } finally {
+      setFetching(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchVehicles();
+  }, []);
 
   /* =========================
      HANDLE CHANGE (SMART)
@@ -51,6 +67,52 @@ export default function AddVehicle({ owner }) {
   /* =========================
      SUBMIT
   ========================= */
+  // Delete vehicle
+  const handleDelete = async (id) => {
+    if (!window.confirm('Delete this vehicle?')) return;
+    setEditLoading(true);
+    setEditMessage('');
+    try {
+      await api.deleteOwnerVehicle(id, owner.owner_id);
+      setEditMessage('✅ Vehicle deleted');
+      fetchVehicles();
+    } catch (err) {
+      setEditMessage('❌ Failed to delete');
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
+  // Start editing
+  const startEdit = (v) => {
+    setEditId(v.vehicle_id);
+    setEditForm({ ...v });
+    setEditMessage('');
+  };
+
+  // Handle edit form change
+  const handleEditChange = (e) => {
+    const { name, value } = e.target;
+    setEditForm((f) => ({ ...f, [name]: value }));
+  };
+
+  // Submit edit
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    setEditLoading(true);
+    setEditMessage('');
+    try {
+      await api.updateOwnerVehicle(editId, editForm, owner.owner_id);
+      setEditMessage('✅ Vehicle updated');
+      setEditId(null);
+      fetchVehicles();
+    } catch (err) {
+      setEditMessage('❌ Failed to update');
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -80,24 +142,12 @@ export default function AddVehicle({ owner }) {
           : null,
       };
 
-     
-
-      const res = await fetch(`${API_BASE_URL}/vehicles`, {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'x-role': 'OWNER',
-    'x-owner-id': owner.owner_id, // ✅ REQUIRED
-  },
-  body: JSON.stringify(payload),
-});
-
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to add vehicle');
+      const data = await api.createVehicle(payload, owner.owner_id);
+      if (!data?.success) {
+        throw new Error(data?.error || 'Failed to add vehicle');
+      }
 
       setMessage('✅ Vehicle added successfully');
-
       setForm({
         vehicle_number: '',
         vehicle_type: '',
@@ -110,6 +160,7 @@ export default function AddVehicle({ owner }) {
         gps_provider: '',
         gps_device_id: '',
       });
+      fetchVehicles();
     } catch (err) {
       setMessage('❌ ' + err.message);
     } finally {
@@ -277,6 +328,73 @@ export default function AddVehicle({ owner }) {
           outline: none;
         }
       `}</style>
+
+      {/* VEHICLE LIST */}
+      <div className="mt-10">
+        <h3 className="text-lg font-semibold mb-4">Your Vehicles</h3>
+        {fetching ? (
+          <div>Loading vehicles…</div>
+        ) : vehicles.length === 0 ? (
+          <div className="text-gray-500">No vehicles found.</div>
+        ) : (
+          <table className="w-full text-sm border">
+            <thead>
+              <tr className="bg-gray-100">
+                <th className="p-2">Number</th>
+                <th>Type</th>
+                <th>Manufacturer</th>
+                <th>Model</th>
+                <th>Year</th>
+                <th>State</th>
+                <th>Fuel</th>
+                <th>Tank</th>
+                <th>GPS</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {vehicles.map((v) => (
+                <tr key={v.vehicle_id} className="border-t">
+                  {editId === v.vehicle_id ? (
+                    <>
+                      <td><input name="vehicle_number" value={editForm.vehicle_number} onChange={handleEditChange} className="input w-28" /></td>
+                      <td><input name="vehicle_type" value={editForm.vehicle_type} onChange={handleEditChange} className="input w-20" /></td>
+                      <td><input name="manufacturer" value={editForm.manufacturer} onChange={handleEditChange} className="input w-20" /></td>
+                      <td><input name="model" value={editForm.model} onChange={handleEditChange} className="input w-20" /></td>
+                      <td><input name="manufacturing_year" value={editForm.manufacturing_year} onChange={handleEditChange} className="input w-16" /></td>
+                      <td><input name="registration_state" value={editForm.registration_state} onChange={handleEditChange} className="input w-12" /></td>
+                      <td><input name="fuel_type" value={editForm.fuel_type} onChange={handleEditChange} className="input w-14" /></td>
+                      <td><input name="tank_capacity" value={editForm.tank_capacity} onChange={handleEditChange} className="input w-14" /></td>
+                      <td><input name="gps_provider" value={editForm.gps_provider} onChange={handleEditChange} className="input w-16" /></td>
+                      <td className="flex gap-2">
+                        <button onClick={handleEditSubmit} className="px-2 py-1 bg-emerald-600 text-white rounded">Save</button>
+                        <button onClick={() => setEditId(null)} className="px-2 py-1 bg-gray-300 rounded">Cancel</button>
+                      </td>
+                    </>
+                  ) : (
+                    <>
+                      <td>{v.vehicle_number}</td>
+                      <td>{v.vehicle_type}</td>
+                      <td>{v.manufacturer}</td>
+                      <td>{v.model}</td>
+                      <td>{v.manufacturing_year}</td>
+                      <td>{v.registration_state}</td>
+                      <td>{v.fuel_type}</td>
+                      <td>{v.tank_capacity}</td>
+                      <td>{v.gps_provider}</td>
+                      <td className="flex gap-2">
+                        <button onClick={() => startEdit(v)} className="px-2 py-1 bg-blue-600 text-white rounded">Edit</button>
+                        <button onClick={() => handleDelete(v.vehicle_id)} className="px-2 py-1 bg-red-600 text-white rounded">Delete</button>
+                      </td>
+                    </>
+                  )}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+        {editMessage && <div className="mt-2 text-sm">{editMessage}</div>}
+      </div>
     </div>
   );
 }

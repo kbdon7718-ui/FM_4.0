@@ -54,6 +54,8 @@ const autoCenterRef = useRef(true);
   const [radius, setRadius] = useState(500);
   const [point, setPoint] = useState(null);
   const [editingId, setEditingId] = useState(null);
+  // Pin-on-map mode
+  const [pinMode, setPinMode] = useState(false);
 
 const [mapLayer, setMapLayer] = useState('standard');
 
@@ -72,27 +74,39 @@ const [graceMinutes, setGraceMinutes] = useState(10);
   /* ======================================================
      INIT MAP
   ====================================================== */
-useEffect(() => {
-  const initMap = () => {
-    if (!window.mappls || mapRef.current) return;
+  useEffect(() => {
+    const initMap = () => {
+      if (!window.mappls || mapRef.current) return;
 
-    mapRef.current = new window.mappls.Map('geofence-map', {
-      center: [28.61, 77.2],
-      zoom: 6,
-    });
+      mapRef.current = new window.mappls.Map('geofence-map', {
+        center: [28.61, 77.2],
+        zoom: 6,
+      });
 
-    mapRef.current.addListener('dragstart', () => {
-      autoCenterRef.current = false;
-    });
+      mapRef.current.addListener('dragstart', () => {
+        autoCenterRef.current = false;
+      });
 
-    mapRef.current.addListener('zoomstart', () => {
-      autoCenterRef.current = false;
-    });
-  };
+      mapRef.current.addListener('zoomstart', () => {
+        autoCenterRef.current = false;
+      });
 
-  const t = setTimeout(initMap, 10);
-  return () => clearTimeout(t);
-}, []);
+      // Pin-on-map click handler
+      mapRef.current.addListener('click', (e) => {
+        if (!pinMode) return;
+        const lat = e.latLng.lat();
+        const lng = e.latLng.lng();
+        setPoint({ lat, lng });
+        setPinMode(false);
+        // Optionally zoom in
+        mapRef.current.setCenter([lat, lng]);
+        mapRef.current.setZoom(16);
+      });
+    };
+
+    const t = setTimeout(initMap, 10);
+    return () => clearTimeout(t);
+  }, [pinMode]);
 
   /* =========================
      FETCH VEHICLE DATA
@@ -131,8 +145,6 @@ useEffect(() => {
       lng < -180 || lng > 180
     ) return;
 
-    seen.add(v.id);
-
     let marker = vehicleMarkersRef.current[v.id];
 
     if (!marker) {
@@ -157,7 +169,6 @@ useEffect(() => {
           "></div>
         `,
       });
-
       vehicleMarkersRef.current[v.id] = marker;
     } else {
       marker.setPosition({ lat, lng });
@@ -329,7 +340,7 @@ useEffect(() => {
   ====================================================== */
   const deleteGeofence = async (id) => {
     if (!confirm('Delete this geofence?')) return;
-    await fetch(`/api/geofences/${id}`, { method: 'DELETE' });
+    await fetch(`${API_BASE_URL}/geofences/${id}`, { method: 'DELETE' });
     loadCompanies();
   };
 

@@ -118,12 +118,42 @@ export const getVehicles = async () => {
   return data;
 };
 
+export const getOwnerVehicles = async (ownerId) => {
+  const { data } = await apiClient.get('/owner/vehicles', {
+    headers: {
+      'x-role': 'OWNER',
+      'x-owner-id': ownerId,
+    },
+  });
+  return data;
+};
+
 /* ================================
    OWNER - ADD VEHICLE
    Backend expects x-role: OWNER and x-owner-id header
 ================================ */
 export const createVehicle = async (payload, ownerId) => {
-  const { data } = await apiClient.post('/vehicles', payload, {
+  const { data } = await apiClient.post('/owner/vehicles', payload, {
+    headers: {
+      'x-role': 'OWNER',
+      'x-owner-id': ownerId,
+    },
+  });
+  return data;
+};
+
+export const updateOwnerVehicle = async (vehicleId, payload, ownerId) => {
+  const { data } = await apiClient.put(`/owner/vehicles/${vehicleId}`, payload, {
+    headers: {
+      'x-role': 'OWNER',
+      'x-owner-id': ownerId,
+    },
+  });
+  return data;
+};
+
+export const deleteOwnerVehicle = async (vehicleId, ownerId) => {
+  const { data } = await apiClient.delete(`/owner/vehicles/${vehicleId}`, {
     headers: {
       'x-role': 'OWNER',
       'x-owner-id': ownerId,
@@ -215,6 +245,10 @@ export const getFuelAnalysis = async () => {
   return data;
 };
 
+export const getArrivalLogs = async () => {
+  const { data } = await apiClient.get('/arrival-logs');
+  return data;
+};
 
 /* ================================
    SLA / GEOFENCING
@@ -257,6 +291,10 @@ const api = {
   getCurrentUser,
 
   getVehicles,
+  getOwnerVehicles,
+  createVehicle,
+  updateOwnerVehicle,
+  deleteOwnerVehicle,
   getLatestTelemetry,
 
    getOwnerDashboard,
@@ -264,6 +302,7 @@ const api = {
   createFuelEntry,
   
   getFuelAnalysis,
+  getArrivalLogs,
 
   processSLA,
   runCorrelation,

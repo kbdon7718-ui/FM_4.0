@@ -1,12 +1,20 @@
 import { useEffect, useState } from "react";
+import api from "../services/api.js";
 
 export function FuelAnalysis() {
   const [rows, setRows] = useState([]);
 
   useEffect(() => {
-    fetch("http://localhost:5002/api/analysis")
-      .then(res => res.json())
-      .then(setRows);
+    const load = async () => {
+      try {
+        const data = await api.getFuelAnalysis();
+        setRows(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error("Fuel analysis load error:", error);
+        setRows([]);
+      }
+    };
+    load();
   }, []);
 
   return (

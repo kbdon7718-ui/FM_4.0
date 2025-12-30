@@ -1,17 +1,15 @@
-import { getOwnerRouteHistory } from '../services/api.js';
-import { Play, Pause, SkipBack, SkipForward, RotateCcw, Calendar, Clock, MapPin } from 'lucide-react';
+import { getOwnerRouteHistory, getOwnerVehicles } from '../services/api.js';
+import { Play, Pause, SkipBack, SkipForward, RotateCcw, Calendar, Clock, MapPin, Activity } from 'lucide-react';
 import { Button } from '../components/ui/button.jsx';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select.jsx';
 import { Input } from '../components/ui/input.jsx';
 import { useEffect, useState, useRef } from 'react';
 
-const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5002";
-const API_BASE_URL = BASE_URL.endsWith("/api") ? BASE_URL : `${BASE_URL}/api`;
-
 /* =========================
    ROUTE TRACING COMPONENT
 ========================= */
 export function RouteTracing() {
+
   const mapRef = useRef(null);
   const mapInstance = useRef(null);
   const markersRef = useRef([]);
@@ -72,13 +70,18 @@ export function RouteTracing() {
   useEffect(() => {
     const loadVehicles = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/vehicles`);
-        if (response.ok) {
-          const data = await response.json();
-          setVehicles(data);
+        const sessionRaw = localStorage.getItem('fm_session_v1');
+        const ownerId = sessionRaw ? JSON.parse(sessionRaw)?.user?.owner_id : null;
+        if (!ownerId) {
+          setVehicles([]);
+          return;
         }
+
+        const data = await getOwnerVehicles(ownerId);
+        setVehicles(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error('Error loading vehicles:', error);
+        setVehicles([]);
       }
     };
 
@@ -96,14 +99,20 @@ export function RouteTracing() {
       // Fetch route history for the selected vehicle and date
       const data = await getOwnerRouteHistory(selectedVehicle, selectedDate);
 
-      setGpsLogs(data.route || []);
-      setStops(data.stops || []);
-      setRouteStats({
-        total_points: data.total_points || 0,
-        stops_count: data.stops?.length || 0,
-        date: data.date,
-        vehicle_id: data.vehicle_id
-      });
+      const rawRoute = Array.isArray(data?.route) ? data.route : [];
+      const normalizedRoute = rawRoute.map((p) => ({
+        ...p,
+        recorded_at: p.recorded_at || p.timestamp || p.recordedAt || p.time || null,
+      }));
+
+      const computedStops = calculateStops(normalizedRoute);
+      const stats = calculateRouteStats(normalizedRoute, computedStops);
+
+      setGpsLogs(normalizedRoute);
+      setStops(computedStops);
+      setRouteStats(stats);
+      setCurrentIndex(0);
+      setIsPlaying(false);
 
       console.log('Loaded route data:', data);
     } catch (error) {
@@ -282,7 +291,7 @@ export function RouteTracing() {
       try {
         const stopMarker = new window.mappls.Marker({
           map: mapInstance.current,
-          position: { lat: stop.latitude, lng: stop.longitude },
+          position: { lat: stop.position?.lat, lng: stop.position?.lng },
           icon: {
             url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
               <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -295,16 +304,16 @@ export function RouteTracing() {
           }
         });
 
-        const arrivalTime = new Date(stop.arrival_time).toLocaleString();
-        const departureTime = stop.departure_time ? new Date(stop.departure_time).toLocaleString() : 'Still stopped';
+        const arrivalTime = stop.startTime ? stop.startTime.toLocaleString() : '—';
+        const departureTime = stop.endTime ? stop.endTime.toLocaleString() : 'Still stopped';
 
         const popupContent = `
           <div style="font-size:12px; padding: 8px; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); min-width: 200px;">
             <strong style="color: #dc2626;">🛑 Stop ${index + 1}</strong><br/>
             <strong>Arrival:</strong> ${arrivalTime}<br/>
             <strong>Departure:</strong> ${departureTime}<br/>
-            <strong>Duration:</strong> ${stop.duration_minutes} minutes<br/>
-            <strong>Location:</strong> ${stop.latitude.toFixed(4)}, ${stop.longitude.toFixed(4)}
+            <strong>Duration:</strong> ${Number(stop.duration || 0).toFixed(1)} minutes<br/>
+            <strong>Location:</strong> ${Number(stop.position?.lat || 0).toFixed(4)}, ${Number(stop.position?.lng || 0).toFixed(4)}
           </div>
         `;
 
@@ -342,6 +351,8 @@ export function RouteTracing() {
         console.error('Error creating current position marker:', error);
       }
     }
+
+    fitMapToRoute(gpsLogs);
 
   }, [gpsLogs, stops, currentIndex]);
 
@@ -421,7 +432,7 @@ export function RouteTracing() {
               </SelectTrigger>
               <SelectContent>
                 {vehicles.map(vehicle => (
-                  <SelectItem key={vehicle.id} value={vehicle.id}>
+                  <SelectItem key={vehicle.vehicle_id} value={vehicle.vehicle_id}>
                     {vehicle.vehicle_number}
                   </SelectItem>
                 ))}

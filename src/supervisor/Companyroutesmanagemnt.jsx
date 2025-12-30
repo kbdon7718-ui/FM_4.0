@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { MapPin, Plus, Edit, Trash2, Clock, Car, Activity } from "lucide-react";
 
 const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5002";
@@ -9,6 +9,72 @@ export function Companyroutesmanagemnt() {
   const [routes, setRoutes] = useState([]);
   const [companies, setCompanies] = useState([]);
   const [vehicles, setVehicles] = useState([]);
+  // New company form
+  const [newCompanyName, setNewCompanyName] = useState("");
+  const [companyLoading, setCompanyLoading] = useState(false);
+  // For route visualization
+  const [selectedCompany, setSelectedCompany] = useState(null);
+  const [selectedCompanyRoute, setSelectedCompanyRoute] = useState(null);
+  const mapRef = useRef(null);
+  const polylineRef = useRef(null);
+    // Add new company
+    const handleAddCompany = async (e) => {
+      e.preventDefault();
+      if (!newCompanyName.trim()) return;
+      setCompanyLoading(true);
+      try {
+        const res = await fetch(`${API_BASE_URL}/companies`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ company_name: newCompanyName })
+        });
+        if (!res.ok) throw new Error("Failed to add company");
+        setNewCompanyName("");
+        fetchCompanies();
+      } catch (err) {
+        alert("Failed to add company");
+      } finally {
+        setCompanyLoading(false);
+      }
+    };
+    // Fetch and show route for selected company
+    const handleCompanyClick = async (company) => {
+      setSelectedCompany(company);
+      // Fetch routes for this company
+      try {
+        const res = await fetch(`${API_BASE_URL}/company-routes?company_id=${company.company_id}`);
+        if (!res.ok) throw new Error("Failed to fetch routes");
+        const data = await res.json();
+        // Pick the first route for now (could add a selector if multiple)
+        setSelectedCompanyRoute(data[0] || null);
+      } catch (err) {
+        setSelectedCompanyRoute(null);
+      }
+    };
+    // Draw polyline for selected route
+    useEffect(() => {
+      if (!window.mappls || !mapRef.current || !selectedCompanyRoute || !selectedCompanyRoute.stops?.length) return;
+      // Remove previous polyline
+      if (polylineRef.current) {
+        polylineRef.current.remove();
+        polylineRef.current = null;
+      }
+      const stops = selectedCompanyRoute.stops.map(s => [s.lat, s.lng]);
+      polylineRef.current = new window.mappls.Polyline({
+        map: mapRef.current,
+        path: stops,
+        strokeColor: "#0D47A1",
+        strokeWeight: 5,
+        strokeOpacity: 0.8
+      });
+      // Center map on first stop
+      if (stops.length) mapRef.current.setCenter(stops[0]);
+      // Fit bounds (optional)
+      // ...
+      return () => {
+        if (polylineRef.current) polylineRef.current.remove();
+      };
+    }, [selectedCompanyRoute]);
   const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [editingRoute, setEditingRoute] = useState(null);
@@ -251,6 +317,26 @@ export function Companyroutesmanagemnt() {
 
   return (
     <div className="w-full max-w-7xl space-y-4">
+      {/* Add New Company */}
+      <div className="bg-card border border-border rounded-xl p-4 mb-4">
+        <form className="flex gap-3 items-center" onSubmit={handleAddCompany}>
+          <input
+            type="text"
+            value={newCompanyName}
+            onChange={e => setNewCompanyName(e.target.value)}
+            placeholder="New company name"
+            className="h-10 rounded-md border border-border px-3 text-sm"
+            disabled={companyLoading}
+          />
+          <button
+            type="submit"
+            className="h-10 px-4 rounded-md bg-primary text-primary-foreground font-semibold"
+            disabled={companyLoading || !newCompanyName.trim()}
+          >
+            {companyLoading ? "Adding..." : "Add Company"}
+          </button>
+        </form>
+      </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* LEFT CARD - ROUTE LIST */}
         <div className="lg:col-span-2 bg-card rounded-xl border border-border overflow-hidden">
@@ -591,6 +677,35 @@ export function Companyroutesmanagemnt() {
           </div>
         )}
       </div>
+      {/* All Companies List (bottom) */}
+      <div className="mt-8">
+        <h3 className="text-lg font-semibold mb-2">All Companies</h3>
+        <div className="flex flex-wrap gap-2">
+          {companies.map(company => (
+            <button
+              key={company.company_id}
+              className={`px-4 py-2 rounded border ${selectedCompany?.company_id === company.company_id ? 'bg-primary text-white' : 'bg-muted/30 text-foreground'}`}
+              onClick={() => handleCompanyClick(company)}
+            >
+              {company.company_name}
+            </button>
+          ))}
+        </div>
+      </div>
+      {/* Map for route visualization */}
+      {selectedCompanyRoute && (
+        <div className="mt-6 border border-border rounded-xl bg-card p-4">
+          <h4 className="font-semibold mb-2">Route for {selectedCompany?.company_name}: {selectedCompanyRoute.route_name}</h4>
+          <div id="company-route-map" style={{ height: 400 }} ref={el => {
+            if (el && !mapRef.current && window.mappls) {
+              mapRef.current = new window.mappls.Map(el, {
+                center: selectedCompanyRoute.stops?.length ? [selectedCompanyRoute.stops[0].lat, selectedCompanyRoute.stops[0].lng] : [28.61, 77.2],
+                zoom: 13
+              });
+            }
+          }} />
+        </div>
+      )}
     </div>
   );
 }
