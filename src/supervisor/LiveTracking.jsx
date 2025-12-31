@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { getLatestTelemetry } from '../services/api.js';
 import { MapPin, Car, Clock, Wrench, Activity, Eye, EyeOff } from 'lucide-react';
+import { PageHeader, PageHeaderTitle, PageHeaderDescription, PageHeaderActions } from '../components/ui/page-header.jsx';
+import { SectionCard, SectionCardHeader, SectionCardContent } from '../components/ui/section-card.jsx';
+import { Button } from '../components/ui/button.jsx';
+import { useMapplsSdk } from '../hooks/useMapplsSdk.js';
 
 const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5002";
 const API_BASE_URL = BASE_URL.endsWith("/api") ? BASE_URL : `${BASE_URL}/api`;
@@ -23,12 +27,20 @@ const autoCenterRef = useRef(true);
   const [showPopup, setShowPopup] = useState(false);
   const [mapError, setMapError] = useState('');
 
+  const { ready: mapplsReady, error: mapplsError } = useMapplsSdk({ timeoutMs: 10000 });
+
+  useEffect(() => {
+    if (mapplsError) setMapError(mapplsError);
+  }, [mapplsError]);
+
 
 
   /* =========================
      INIT MAP
   ========================= */
 useEffect(() => {
+  if (!mapplsReady) return;
+
   const initMap = () => {
     if (!window.mappls) {
       setMapError('Mappls SDK not loaded. Please refresh the page.');
@@ -60,7 +72,7 @@ useEffect(() => {
 
   const timer = setTimeout(initMap, 500);
   return () => clearTimeout(timer);
-}, []);
+}, [mapplsReady]);
 
   /* =========================
      FETCH VEHICLE DATA
@@ -335,211 +347,162 @@ useEffect(() => {
   }, []);
 
   return (
-    <div className="flex flex-col min-h-0 w-full">
-      {/* ================= STATUS DASHBOARD ================= */}
-      <section className="rounded-xl border border-border bg-card shadow-sm">
-        <div className="p-4 sm:p-5">
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <h2 className="text-lg sm:text-xl font-semibold tracking-tight text-foreground truncate">
-                  Live Vehicle Tracking
-                </h2>
-                <p className="text-xs text-muted-foreground">Real-time location and status</p>
-              </div>
-              <div className="text-xs text-muted-foreground shrink-0 lg:hidden tabular-nums">
-                Last updated: {new Date().toLocaleTimeString()}
-              </div>
-            </div>
-
-            <div className="overflow-x-auto">
-              <div className="flex gap-2 min-w-max">
-                <button
-                  type="button"
-                  aria-pressed={statusFilter === 'all'}
-                  onClick={() => setStatusFilter('all')}
-                  className={`inline-flex items-center justify-center h-11 px-4 rounded-md text-sm font-medium transition-colors border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
-                    statusFilter === 'all'
-                      ? 'bg-primary text-primary-foreground border-primary'
-                      : 'bg-card text-muted-foreground border-border hover:bg-accent hover:text-accent-foreground'
-                  }`}
-                >
-                  All ({statusCounts.total})
-                </button>
-
-                <button
-                  type="button"
-                  aria-pressed={statusFilter === 'moving'}
-                  onClick={() => setStatusFilter('moving')}
-                  className={`inline-flex items-center justify-center h-11 px-4 rounded-md text-sm font-medium transition-colors border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
-                    statusFilter === 'moving'
-                      ? 'bg-success text-success-foreground border-success'
-                      : 'bg-card text-muted-foreground border-border hover:bg-accent hover:text-accent-foreground'
-                  }`}
-                >
-                  Moving ({statusCounts.moving})
-                </button>
-
-                <button
-                  type="button"
-                  aria-pressed={statusFilter === 'idling'}
-                  onClick={() => setStatusFilter('idling')}
-                  className={`inline-flex items-center justify-center h-11 px-4 rounded-md text-sm font-medium transition-colors border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
-                    statusFilter === 'idling'
-                      ? 'bg-warning text-warning-foreground border-warning'
-                      : 'bg-card text-muted-foreground border-border hover:bg-accent hover:text-accent-foreground'
-                  }`}
-                >
-                  Idling ({statusCounts.idling})
-                </button>
-
-                <button
-                  type="button"
-                  aria-pressed={statusFilter === 'stopped'}
-                  onClick={() => setStatusFilter('stopped')}
-                  className={`inline-flex items-center justify-center h-11 px-4 rounded-md text-sm font-medium transition-colors border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
-                    statusFilter === 'stopped'
-                      ? 'bg-destructive text-destructive-foreground border-destructive'
-                      : 'bg-card text-muted-foreground border-border hover:bg-accent hover:text-accent-foreground'
-                  }`}
-                >
-                  Stopped ({statusCounts.stopped})
-                </button>
-              </div>
-            </div>
-
-            <div className="hidden lg:block text-xs text-muted-foreground shrink-0 tabular-nums">
-              Last updated: {new Date().toLocaleTimeString()}
-            </div>
-          </div>
+    <div className="space-y-4">
+      <PageHeader>
+        <div>
+          <PageHeaderTitle>Live Tracking</PageHeaderTitle>
+          <PageHeaderDescription>Real-time location and status</PageHeaderDescription>
         </div>
-      </section>
 
-      {/* ================= MAIN CONTENT ================= */}
-      <div className="flex-1 min-h-0 flex flex-col lg:flex-row gap-4 mt-4">
-        {/* ================= MAP ================= */}
-        <section className="relative flex flex-col min-h-0 flex-1">
-          <div className="relative rounded-xl border border-border bg-card overflow-hidden">
+        <PageHeaderActions>
+          <div className="inline-flex items-center gap-2 rounded-md border border-border bg-card px-3 h-9 text-xs text-muted-foreground">
+            <Clock className="h-4 w-4 text-muted-foreground" />
+            <span className="tabular-nums">{new Date().toLocaleTimeString()}</span>
+          </div>
+        </PageHeaderActions>
+      </PageHeader>
+
+      <div className="grid gap-4 lg:grid-cols-[1fr_360px] h-[calc(100svh-168px)] min-h-[620px]">
+        {/* MAP */}
+        <SectionCard className="overflow-hidden flex flex-col">
+          <SectionCardHeader title="Map" description="Click a vehicle in the list to focus" />
+          <SectionCardContent className="p-0 flex-1 min-h-0 relative">
             {mapError ? (
-              <div
-                className="w-full h-[60svh] min-h-[360px] sm:h-[65svh] lg:h-[72svh] max-h-[820px] flex items-center justify-center bg-muted/30"
-                style={{ height: '65vh', minHeight: 420, maxHeight: 900 }}
-              >
+              <div className="w-full h-full min-h-[360px] flex items-center justify-center bg-muted/30">
                 <div className="text-center px-6">
                   <div className="text-destructive text-base font-semibold mb-2">Map Error</div>
                   <div className="text-sm text-muted-foreground mb-4">{mapError}</div>
-                  <button
-                    type="button"
-                    onClick={() => window.location.reload()}
-                    className="inline-flex items-center justify-center h-11 px-4 rounded-md bg-primary text-primary-foreground text-sm font-medium shadow-sm hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                  >
+                  <Button type="button" onClick={() => window.location.reload()}>
                     Refresh Page
-                  </button>
+                  </Button>
                 </div>
               </div>
             ) : (
-              <div
-                ref={mapRef}
-                id="live-tracking-map"
-                className="w-full h-[60svh] min-h-[360px] sm:h-[65svh] lg:h-[72svh] max-h-[820px]"
-                style={{ height: '65vh', minHeight: 420, maxHeight: 900 }}
-              />
+              <div ref={mapRef} id="live-tracking-map" className="w-full h-full min-h-[360px]" />
             )}
 
-            {/* Map Legend - only show if no error */}
             {!mapError && (
               <div className="absolute top-3 left-3 sm:top-4 sm:left-4 bg-card/95 backdrop-blur p-3 rounded-lg shadow-lg border border-border">
                 <h4 className="text-sm font-medium text-foreground mb-2">Legend</h4>
                 <div className="space-y-1 text-xs text-muted-foreground">
                   <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-success rounded"></div>
+                    <div className="w-3 h-3 bg-success rounded" />
                     <span>Moving</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-warning rounded"></div>
+                    <div className="w-3 h-3 bg-warning rounded" />
                     <span>Idling</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-destructive rounded"></div>
+                    <div className="w-3 h-3 bg-destructive rounded" />
                     <span>Stopped</span>
                   </div>
                 </div>
               </div>
             )}
-          </div>
-        </section>
+          </SectionCardContent>
+        </SectionCard>
 
-        {/* ================= RIGHT SIDEBAR ================= */}
-        <aside className="w-full lg:w-80 lg:shrink-0 rounded-xl border border-border bg-card shadow-sm lg:h-[72svh] lg:max-h-[820px] overflow-visible lg:overflow-y-auto">
-          <div className="p-4 border-b border-border bg-muted/30 backdrop-blur sticky top-0 z-10">
-            <div className="flex items-end justify-between gap-3">
-              <div>
-                <p className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Vehicles</p>
-                <p className="text-sm font-semibold text-foreground tabular-nums">
-                  {filteredVehicles.length}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="divide-y divide-border">
-            {filteredVehicles.map((vehicle) => (
-              <button
-                key={vehicle.id}
+        {/* RIGHT SIDEBAR */}
+        <SectionCard className="overflow-hidden flex flex-col">
+          <SectionCardHeader
+            title="Vehicles"
+            description={`Showing ${filteredVehicles.length} of ${statusCounts.total}`}
+          />
+          <SectionCardContent className="p-4 sm:p-5 flex-1 min-h-0 overflow-y-auto space-y-4">
+            <div className="grid grid-cols-2 gap-2">
+              <Button
                 type="button"
-                onClick={() => handleVehicleClick(vehicle)}
-                className={`w-full text-left p-4 hover:bg-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
-                  selectedVehicle?.id === vehicle.id
-                    ? 'bg-accent ring-1 ring-inset ring-border'
-                    : ''
-                }`}
+                variant={statusFilter === 'all' ? 'default' : 'outline'}
+                onClick={() => setStatusFilter('all')}
               >
-                <div className="flex items-start justify-between gap-3 mb-2">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <Car size={16} className="text-muted-foreground shrink-0" />
-                    <span className="font-medium text-foreground truncate">{vehicle.number}</span>
-                  </div>
-                  <div
-                    className={`shrink-0 px-2 py-1 rounded-full text-xs font-medium capitalize ${
-                      vehicle.status === 'moving'
-                        ? 'bg-success-muted text-success border border-success-muted'
-                        : vehicle.status === 'idling'
-                        ? 'bg-warning-muted text-warning border border-warning-muted'
-                        : 'bg-destructive-muted text-destructive border border-destructive-muted'
-                    }`}
-                  >
-                    {vehicle.status}
-                  </div>
-                </div>
-
-                <div className="space-y-1 text-sm text-muted-foreground">
-                  <div className="flex items-center gap-2">
-                    <Activity size={14} className="text-muted-foreground" />
-                    <span className="tabular-nums">{vehicle.speed} km/h</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <MapPin size={14} className="text-muted-foreground" />
-                    <span className="tabular-nums">
-                      {vehicle.lat?.toFixed(4)}, {vehicle.lng?.toFixed(4)}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Clock size={14} className="text-muted-foreground" />
-                    <span className="tabular-nums">Today: {vehicle.today_km} km</span>
-                  </div>
-                </div>
-              </button>
-            ))}
-          </div>
-
-          {filteredVehicles.length === 0 && (
-            <div className="p-10 text-center text-muted-foreground">
-              <Car size={48} className="mx-auto mb-4 opacity-50" />
-              <p className="text-sm font-medium text-foreground">No vehicles found</p>
-              <p className="text-sm text-muted-foreground">Try changing the status filter</p>
+                All ({statusCounts.total})
+              </Button>
+              <Button
+                type="button"
+                variant={statusFilter === 'moving' ? 'default' : 'outline'}
+                onClick={() => setStatusFilter('moving')}
+                className={statusFilter === 'moving' ? 'bg-success text-success-foreground hover:bg-success/90' : ''}
+              >
+                Moving ({statusCounts.moving})
+              </Button>
+              <Button
+                type="button"
+                variant={statusFilter === 'idling' ? 'default' : 'outline'}
+                onClick={() => setStatusFilter('idling')}
+                className={statusFilter === 'idling' ? 'bg-warning text-warning-foreground hover:bg-warning/90' : ''}
+              >
+                Idling ({statusCounts.idling})
+              </Button>
+              <Button
+                type="button"
+                variant={statusFilter === 'stopped' ? 'default' : 'outline'}
+                onClick={() => setStatusFilter('stopped')}
+                className={statusFilter === 'stopped' ? 'bg-destructive text-destructive-foreground hover:bg-destructive/90' : ''}
+              >
+                Stopped ({statusCounts.stopped})
+              </Button>
             </div>
-          )}
-        </aside>
+
+            <div className="divide-y divide-border rounded-lg border border-border overflow-hidden">
+              {filteredVehicles.map((vehicle) => (
+                <button
+                  key={vehicle.id}
+                  type="button"
+                  onClick={() => handleVehicleClick(vehicle)}
+                  className={`w-full text-left p-4 hover:bg-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
+                    selectedVehicle?.id === vehicle.id
+                      ? 'bg-accent ring-1 ring-inset ring-border'
+                      : ''
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-3 mb-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Car size={16} className="text-muted-foreground shrink-0" />
+                      <span className="font-medium text-foreground truncate">{vehicle.number}</span>
+                    </div>
+                    <div
+                      className={`shrink-0 px-2 py-1 rounded-full text-xs font-medium capitalize ${
+                        vehicle.status === 'moving'
+                          ? 'bg-success-muted text-success border border-success-muted'
+                          : vehicle.status === 'idling'
+                          ? 'bg-warning-muted text-warning border border-warning-muted'
+                          : 'bg-destructive-muted text-destructive border border-destructive-muted'
+                      }`}
+                    >
+                      {vehicle.status}
+                    </div>
+                  </div>
+
+                  <div className="space-y-1 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-2">
+                      <Activity size={14} className="text-muted-foreground" />
+                      <span className="tabular-nums">{vehicle.speed} km/h</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <MapPin size={14} className="text-muted-foreground" />
+                      <span className="tabular-nums">
+                        {vehicle.lat?.toFixed(4)}, {vehicle.lng?.toFixed(4)}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Clock size={14} className="text-muted-foreground" />
+                      <span className="tabular-nums">Today: {vehicle.today_km} km</span>
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            {filteredVehicles.length === 0 && (
+              <div className="p-6 text-center text-muted-foreground">
+                <Car size={48} className="mx-auto mb-4 opacity-50" />
+                <p className="text-sm font-medium text-foreground">No vehicles found</p>
+                <p className="text-sm text-muted-foreground">Try changing the status filter</p>
+              </div>
+            )}
+          </SectionCardContent>
+        </SectionCard>
       </div>
 
       {/* ================= VEHICLE DETAIL POPUP ================= */}
@@ -555,14 +518,14 @@ useEffect(() => {
                     {selectedVehicle.number}
                   </h3>
                 </div>
-                <button
+                <Button
                   type="button"
+                  variant="outline"
+                  size="sm"
                   onClick={() => setShowPopup(false)}
-                  className="inline-flex items-center justify-center h-11 w-11 rounded-md text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                  aria-label="Close"
                 >
-                  ✕
-                </button>
+                  Close
+                </Button>
               </div>
 
               <div className="space-y-4">

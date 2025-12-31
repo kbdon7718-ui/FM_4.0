@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { API_BASE_URL } from '../services/apiBase';
+import { useMapplsSdk } from '../hooks/useMapplsSdk.js';
 
-export default function FleetMap({ user }) {
+export default function FleetMap({ user, className, style }) {
   const mapRef = useRef(null);
   const markerRef = useRef(null);
   const watchIdRef = useRef(null);
@@ -10,11 +11,14 @@ export default function FleetMap({ user }) {
   const hasCenteredRef = useRef(false);
 
   const [error, setError] = useState(null);
+  const { ready: mapplsReady, error: mapplsError } = useMapplsSdk({ timeoutMs: 10000 });
 
   /* =========================
      INIT MAP (ONCE)
   ========================= */
   useEffect(() => {
+    if (!mapplsReady) return;
+
     let attempts = 0;
 
     const waitForSDK = () => {
@@ -91,7 +95,11 @@ export default function FleetMap({ user }) {
     waitForSDK()
       .then(init)
       .catch(() => setError('Map SDK not loaded'));
-  }, []);
+  }, [mapplsReady]);
+
+  useEffect(() => {
+    if (mapplsError) setError(mapplsError);
+  }, [mapplsError]);
 
   /* =========================
      LOAD LAST DB LOCATION
@@ -205,8 +213,8 @@ export default function FleetMap({ user }) {
   return (
     <div
       id="fleet-map"
-      className="w-full rounded-xl overflow-hidden border border-border bg-card"
-      style={{ height: '65vh', minHeight: 420, maxHeight: 900 }}
+      className={`w-full rounded-xl overflow-hidden border border-border bg-card ${className || ''}`}
+      style={{ height: '65vh', minHeight: 420, maxHeight: 900, ...(style || {}) }}
     />
   );
 }

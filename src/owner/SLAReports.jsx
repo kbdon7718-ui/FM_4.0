@@ -5,6 +5,8 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import api from '../services/api.js';
+import { PageHeader, PageHeaderTitle, PageHeaderDescription } from '../components/ui/page-header.jsx';
+import { SectionCard, SectionCardHeader, SectionCardContent } from '../components/ui/section-card.jsx';
 
 export default function SLAReports() {
   const [logs, setLogs] = useState([]);
@@ -99,14 +101,14 @@ export default function SLAReports() {
 
   return (
     <div className="w-full max-w-7xl space-y-6">
-      <div className="space-y-2">
-        <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground">
-          SLA & Geofencing Reports
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Owner-level SLA compliance based on automated geofence arrival tracking
-        </p>
-      </div>
+      <PageHeader>
+        <div>
+          <PageHeaderTitle>SLA & Geofencing Reports</PageHeaderTitle>
+          <PageHeaderDescription>
+            Owner-level SLA compliance based on automated geofence arrival tracking
+          </PageHeaderDescription>
+        </div>
+      </PageHeader>
 
       {/* ================= KPI SUMMARY ================= */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5 sm:gap-4">
@@ -282,10 +284,12 @@ function Kpi({ title, value, color = 'gray' }) {
   };
 
   return (
-    <div className="bg-card border border-border rounded-xl p-4 sm:p-5">
-      <p className="text-sm text-muted-foreground">{title}</p>
-      <p className={`text-2xl font-semibold tracking-tight tabular-nums ${colors[color] || colors.gray}`}>{value}</p>
-    </div>
+    <SectionCard>
+      <SectionCardContent className="p-4 sm:p-5">
+        <p className="text-sm text-muted-foreground">{title}</p>
+        <p className={`text-2xl font-semibold tracking-tight tabular-nums ${colors[color] || colors.gray}`}>{value}</p>
+      </SectionCardContent>
+    </SectionCard>
   );
 }
 
@@ -311,10 +315,12 @@ function MobileStat({ label, value, tone = 'default' }) {
 
 function Section({ title, children }) {
   return (
-    <div className="mt-6 sm:mt-8 bg-card p-4 sm:p-6 border border-border rounded-xl">
-      <h2 className="text-lg sm:text-xl font-semibold mb-4 text-foreground">{title}</h2>
-      {children}
-    </div>
+    <SectionCard className="mt-6 sm:mt-8">
+      <SectionCardHeader title={title} />
+      <SectionCardContent className="p-4 sm:p-6">
+        {children}
+      </SectionCardContent>
+    </SectionCard>
   );
 }
 

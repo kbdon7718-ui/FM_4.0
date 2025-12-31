@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { getLatestTelemetry } from '../services/api.js';
 import { MapPin, Car, Clock, Phone, Wrench, Activity, Eye, EyeOff } from 'lucide-react';
+import { PageHeader, PageHeaderTitle, PageHeaderDescription } from '../components/ui/page-header.jsx';
+import { SectionCard, SectionCardHeader, SectionCardContent } from '../components/ui/section-card.jsx';
+import { Button } from '../components/ui/button.jsx';
+import { useMapplsSdk } from '../hooks/useMapplsSdk.js';
 
 function zoomByRadius(radius) {
   if (radius <= 200) return 18;
@@ -48,6 +52,12 @@ const autoCenterRef = useRef(true);
   const [showPopup, setShowPopup] = useState(false);
   const [mapError, setMapError] = useState('');
 
+  const { ready: mapplsReady, error: mapplsError } = useMapplsSdk({ timeoutMs: 10000 });
+
+  useEffect(() => {
+    if (mapplsError) setMapError(mapplsError);
+  }, [mapplsError]);
+
   /* ---------- STATE ---------- */
   const [companies, setCompanies] = useState([]);
   const [companyName, setCompanyName] = useState('');
@@ -75,6 +85,8 @@ const [graceMinutes, setGraceMinutes] = useState(10);
      INIT MAP
   ====================================================== */
   useEffect(() => {
+    if (!mapplsReady) return;
+
     const initMap = () => {
       if (!window.mappls || mapRef.current) return;
 
@@ -106,7 +118,7 @@ const [graceMinutes, setGraceMinutes] = useState(10);
 
     const t = setTimeout(initMap, 10);
     return () => clearTimeout(t);
-  }, [pinMode]);
+  }, [pinMode, mapplsReady]);
 
   /* =========================
      FETCH VEHICLE DATA
@@ -348,72 +360,78 @@ useEffect(() => {
      UI
   ====================================================== */
   return (
-    <div className="flex flex-col lg:flex-row min-h-[70svh] bg-background">
-      {/* MAP */}
-      <div className="flex-1 min-w-0">
-        <div className="overflow-hidden rounded-xl border border-border bg-card">
-          <div
-            id="geofence-map"
-            className="w-full h-[60svh] min-h-[360px] sm:h-[65svh] lg:h-[72svh] max-h-[820px] pointer-events-auto"
-          />
+    <div className="space-y-4">
+      <PageHeader>
+        <div>
+          <PageHeaderTitle>Geofencing</PageHeaderTitle>
+          <PageHeaderDescription>
+            Create geofences, view them on the map, and assign vehicles
+          </PageHeaderDescription>
         </div>
-      </div>
+      </PageHeader>
 
-      {/* RIGHT PANEL */}
-      <div className="w-full lg:w-[520px] lg:shrink-0 mt-4 lg:mt-0 lg:ml-4 border border-border bg-card p-4 sm:p-6 overflow-y-auto lg:h-[72svh] lg:max-h-[820px] rounded-xl relative z-10">
-        <h1 className="text-lg font-semibold mb-6 text-foreground">Geofence Management</h1>
+      <div className="grid gap-4 lg:grid-cols-[1fr_520px] h-[calc(100svh-168px)] min-h-[620px]">
+        {/* MAP */}
+        <SectionCard className="overflow-hidden flex flex-col">
+          <SectionCardHeader title="Map" description="Geofences and live vehicles" />
+          <SectionCardContent className="p-0 flex-1 min-h-0">
+            <div id="geofence-map" className="w-full h-full pointer-events-auto" />
+          </SectionCardContent>
+        </SectionCard>
 
-        {/* FORM */}
-        <div className="border border-border rounded-lg p-5 mb-6 bg-muted/10">
-          <h2 className="font-semibold mb-4 text-foreground">
-            {editingId ? '✏️ Edit Geofence' : '📍 Create Geofence'}
-          </h2>
+        {/* RIGHT SIDEBAR */}
+        <SectionCard className="overflow-hidden flex flex-col">
+          <SectionCardHeader title="Geofence management" description="Create, edit, delete, and assign" />
+          <SectionCardContent className="p-4 sm:p-6 flex-1 min-h-0 overflow-y-auto space-y-6">
+            {/* FORM */}
+            <div className="border border-border rounded-lg p-5 bg-muted/10">
+              <h2 className="font-semibold mb-4 text-foreground">
+                {editingId ? '✏️ Edit Geofence' : '📍 Create Geofence'}
+              </h2>
 
-          <div className="space-y-4">
-            <input
-              id="searchBox"
-              className="w-full h-11 rounded-md border border-input bg-background px-3 text-sm shadow-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-              placeholder="Search company address"
-              value={companyName}
-              onChange={(e) => setCompanyName(e.target.value)}
-            />
+              <div className="space-y-4">
+                <input
+                  id="searchBox"
+                  className="w-full h-11 rounded-md border border-input bg-background px-3 text-sm shadow-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                  placeholder="Search company address"
+                  value={companyName}
+                  onChange={(e) => setCompanyName(e.target.value)}
+                />
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="h-11 rounded-md border border-border bg-muted/30 px-3 text-sm flex items-center justify-between">
-                <span className="text-muted-foreground">Lat</span>
-                <span className="font-medium text-foreground tabular-nums">
-                  {point?.lat != null ? Number(point.lat).toFixed(6) : '--'}
-                </span>
-              </div>
-              <div className="h-11 rounded-md border border-border bg-muted/30 px-3 text-sm flex items-center justify-between">
-                <span className="text-muted-foreground">Lng</span>
-                <span className="font-medium text-foreground tabular-nums">
-                  {point?.lng != null ? Number(point.lng).toFixed(6) : '--'}
-                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="h-11 rounded-md border border-border bg-muted/30 px-3 text-sm flex items-center justify-between">
+                    <span className="text-muted-foreground">Lat</span>
+                    <span className="font-medium text-foreground tabular-nums">
+                      {point?.lat != null ? Number(point.lat).toFixed(6) : '--'}
+                    </span>
+                  </div>
+                  <div className="h-11 rounded-md border border-border bg-muted/30 px-3 text-sm flex items-center justify-between">
+                    <span className="text-muted-foreground">Lng</span>
+                    <span className="font-medium text-foreground tabular-nums">
+                      {point?.lng != null ? Number(point.lng).toFixed(6) : '--'}
+                    </span>
+                  </div>
+                </div>
+
+                <input
+                  type="number"
+                  className="w-full h-11 rounded-md border border-input bg-background px-3 text-sm shadow-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                  placeholder="Radius (meters)"
+                  value={radius}
+                  onChange={(e) => setRadius(+e.target.value)}
+                />
+
+                <Button onClick={saveGeofence} className="w-full">
+                  {editingId ? 'Update Geofence' : 'Create Geofence'}
+                </Button>
               </div>
             </div>
 
-            <input
-              type="number"
-              className="w-full h-11 rounded-md border border-input bg-background px-3 text-sm shadow-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-              placeholder="Radius (meters)"
-              value={radius}
-              onChange={(e) => setRadius(+e.target.value)}
-            />
+            {/* LIST */}
+            <div>
+              <h2 className="font-semibold mb-3 text-foreground">Geofences</h2>
 
-            <button
-              onClick={saveGeofence}
-              className="w-full h-11 rounded-md bg-primary text-primary-foreground text-sm font-semibold shadow-sm hover:bg-primary/90 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-            >
-              {editingId ? 'Update Geofence' : 'Create Geofence'}
-            </button>
-          </div>
-        </div>
-
-        {/* LIST */}
-        <h2 className="font-semibold mb-3 text-foreground">Geofences</h2>
-
-        {companies.map((c) => {
+              {companies.map((c) => {
           const m = c.center
             ?.toString()
             .match(/POINT\(([-\d.]+) ([-\d.]+)\)/);
@@ -496,7 +514,10 @@ useEffect(() => {
               </div>
             </div>
           );
-        })}
+              })}
+            </div>
+          </SectionCardContent>
+        </SectionCard>
       </div>
 {showAssign && (
   <div className="fixed inset-0 bg-black/50 z-50 p-4 overflow-y-auto" role="dialog" aria-modal="true" aria-label="Assign vehicle to geofence">
@@ -538,14 +559,16 @@ useEffect(() => {
         />
 
         <div className="flex justify-end gap-3">
-          <button
+          <Button
+            type="button"
+            variant="outline"
             onClick={() => setShowAssign(false)}
-            className="h-11 px-4 rounded-md border border-border bg-card text-sm font-medium text-foreground hover:bg-accent transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             Cancel
-          </button>
+          </Button>
 
-          <button
+          <Button
+            type="button"
             onClick={async () => {
               if (!vehicleId || !expectedTime) {
                 alert('Select vehicle & time');
@@ -556,8 +579,7 @@ useEffect(() => {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                  geofence_id: selectedGeofence.company_id
-,
+                  geofence_id: selectedGeofence.company_id,
                   vehicle_id: vehicleId,
                   expected_entry_time: expectedTime,
                   grace_minutes: graceMinutes,
@@ -572,13 +594,12 @@ useEffect(() => {
             className="h-11 px-4 rounded-md bg-primary text-primary-foreground text-sm font-semibold shadow-sm hover:bg-primary/90 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             Save
-          </button>
+          </Button>
         </div>
       </div>
     </div>
   </div>
 )}
-
     </div>
   );
 }

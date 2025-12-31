@@ -3,6 +3,8 @@ import { MapPin, Navigation, RefreshCw, Clock3, Activity } from 'lucide-react';
 import VehicleMap from '../components/map/VehicleMap.jsx';
 import { getLatestTelemetry } from '../services/api.js';
 import { Button } from '../components/ui/button.jsx';
+import { PageHeader, PageHeaderTitle, PageHeaderDescription, PageHeaderActions } from '../components/ui/page-header.jsx';
+import { SectionCard, SectionCardHeader, SectionCardContent } from '../components/ui/section-card.jsx';
 
 const FALLBACK_VEHICLES = [
   { id: 'HR55AN2175', number: 'HR55AN2175', status: 'moving', statusText: 'Active', speed: 42, lat: 28.4595, lng: 77.0266, rotation: 90, address: 'Gurugram, HR', lastUpdated: 'just now' },
@@ -84,41 +86,37 @@ export function VehicleTracking() {
   }, [vehicles]);
 
   return (
-    <div className="flex flex-col min-h-0 w-full">
-      <div className="flex flex-col lg:flex-row min-h-0 gap-4">
-        <div className="flex-1 min-w-0">
-          {/* Header */}
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-            <div className="min-w-0">
-              <h2 className="text-lg sm:text-xl font-semibold tracking-tight text-foreground truncate">
-                Live Fleet Tracking
-              </h2>
-              <p className="text-sm text-muted-foreground">
-                Location, speed, and status in real time
-              </p>
-            </div>
+    <div className="space-y-4">
+      <PageHeader>
+        <div className="min-w-0">
+          <PageHeaderTitle>Vehicle Tracking</PageHeaderTitle>
+          <PageHeaderDescription>Location, speed, and status in real time</PageHeaderDescription>
+        </div>
 
-            <div className="flex flex-wrap items-center gap-2 justify-start sm:justify-end">
-              <div className="inline-flex items-center gap-2 rounded-md border border-border bg-card px-3 h-11 text-xs text-muted-foreground">
-                <Clock3 className="h-4 w-4 text-muted-foreground" />
-                <span className="tabular-nums">
-                  {lastUpdated ? lastUpdated.toLocaleTimeString() : 'Updating...'}
-                </span>
-              </div>
-
-              <Button
-                variant="outline"
-                onClick={fetchTelemetry}
-                disabled={isLoading}
-                className="h-11"
-              >
-                <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-              </Button>
-            </div>
+        <PageHeaderActions>
+          <div className="inline-flex items-center gap-2 rounded-md border border-border bg-card px-3 h-9 text-xs text-muted-foreground">
+            <Clock3 className="h-4 w-4 text-muted-foreground" />
+            <span className="tabular-nums">
+              {lastUpdated ? lastUpdated.toLocaleTimeString() : 'Updating...'}
+            </span>
           </div>
+          <Button
+            variant="outline"
+            onClick={fetchTelemetry}
+            disabled={isLoading}
+            size="icon"
+            className="h-9 w-9"
+            aria-label="Refresh telemetry"
+          >
+            <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+          </Button>
+        </PageHeaderActions>
+      </PageHeader>
 
-          {/* Map */}
-          <div className="relative mt-3">
+      <div className="grid gap-4 lg:grid-cols-[1fr_360px] h-[calc(100svh-168px)] min-h-[620px]">
+        <SectionCard className="overflow-hidden flex flex-col">
+          <SectionCardHeader title="Map" description="Click a marker to select a vehicle" />
+          <SectionCardContent className="p-0 flex-1 min-h-0 relative">
             <VehicleMap
               vehicles={vehicles}
               selectedVehicleId={selectedVehicleId}
@@ -127,7 +125,6 @@ export function VehicleTracking() {
               zoom={6}
             />
 
-            {/* Legend */}
             <div className="absolute bottom-3 left-3 sm:bottom-4 sm:left-4 z-20 bg-card/95 backdrop-blur-sm px-4 py-3 rounded-lg shadow-lg border border-border">
               <p className="text-sm font-medium text-foreground mb-2 flex items-center gap-2">
                 <MapPin className="h-4 w-4 text-success" />
@@ -154,32 +151,16 @@ export function VehicleTracking() {
                 {error}
               </div>
             )}
-          </div>
-        </div>
+          </SectionCardContent>
+        </SectionCard>
 
-        {/* Right rail */}
-        <aside className="w-full lg:w-80 lg:shrink-0 min-h-0 rounded-xl border border-border bg-card shadow-sm overflow-hidden">
-          <div className="p-4 border-b border-border bg-muted/30 backdrop-blur sticky top-0 z-10">
-            <p className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Vehicles</p>
-            <div className="mt-1 flex items-end justify-between gap-3">
-              <p className="text-2xl font-bold tracking-tight text-foreground tabular-nums flex items-center gap-2">
-                <Activity className="h-5 w-5 text-success" />
-                {summary.total}
-              </p>
-              <Button
-                variant="outline"
-                onClick={fetchTelemetry}
-                disabled={isLoading}
-                className="h-11 px-3"
-                title="Refresh"
-              >
-                <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-              </Button>
-            </div>
-          </div>
-
-          <div className="lg:h-[72svh] lg:min-h-[360px] lg:max-h-[820px] overflow-y-auto">
-            <div className="space-y-3 p-4">
+        <SectionCard className="overflow-hidden flex flex-col">
+          <SectionCardHeader
+            title="Vehicles"
+            description={`Total ${summary.total} • Moving ${summary.moving} • Idle ${summary.idling} • Stopped ${summary.stopped}`}
+          />
+          <SectionCardContent className="p-4 sm:p-5 flex-1 min-h-0 overflow-y-auto">
+            <div className="space-y-3">
               {vehicles.map((vehicle) => (
                 <button
                   key={vehicle.id}
@@ -187,7 +168,7 @@ export function VehicleTracking() {
                   onClick={() => setSelectedVehicleId(vehicle.id)}
                   className={`w-full text-left p-3 rounded-lg border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
                     selectedVehicleId === vehicle.id
-                      ? 'border-success-muted bg-success-muted'
+                      ? 'border-primary/30 bg-primary/10'
                       : 'border-border bg-card hover:bg-accent'
                   }`}
                 >
@@ -208,8 +189,8 @@ export function VehicleTracking() {
                 </button>
               ))}
             </div>
-          </div>
-        </aside>
+          </SectionCardContent>
+        </SectionCard>
       </div>
     </div>
   );

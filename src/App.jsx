@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { LoginPage } from './components/pages/LoginPage.jsx';
+import { Toaster } from './components/ui/sonner.jsx';
 
 import { OwnerLayout } from './owner/OwnerLayout.jsx';
 import { SupervisorLayout } from './supervisor/SupervisorLayout.jsx';
@@ -104,6 +105,7 @@ export default function App() {
   ========================= */
   return (
     <>
+      <Toaster />
       {session.role === 'OWNER' && (
         <OwnerLayout
           onLogout={handleLogout}

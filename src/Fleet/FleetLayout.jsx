@@ -11,6 +11,8 @@ import {
 import FleetMap from './FleetMap';
 import FleetSettings from './FleetSettings';
 import { Button } from '../components/ui/button.jsx';
+import { PageHeader, PageHeaderTitle, PageHeaderDescription } from '../components/ui/page-header.jsx';
+import { SectionCard, SectionCardHeader, SectionCardContent } from '../components/ui/section-card.jsx';
 import {
   Sheet,
   SheetContent,
@@ -289,10 +291,14 @@ useEffect(() => {
 
         <main className="flex-1 min-h-0 overflow-auto bg-background">
           {isWidePage ? (
-            <div className="p-3 sm:p-4">
+            <div className="p-3 sm:p-4 min-h-0">
               {activeTab === 'location' && vehicle && (
-                <div className="w-full">
-                  <FleetMap user={{ vehicle_id: vehicle.vehicle_id }} />
+                <div className="w-full min-h-0">
+                  <FleetMap
+                    user={{ vehicle_id: vehicle.vehicle_id }}
+                    className="h-[calc(100svh-120px)] min-h-[620px]"
+                    style={{ height: 'calc(100svh - 120px)', minHeight: 620, maxHeight: 'none' }}
+                  />
                 </div>
               )}
 
@@ -305,60 +311,83 @@ useEffect(() => {
           ) : (
             <div className="p-3 sm:p-4 lg:p-6">
               <div className="mx-auto w-full max-w-7xl">
-                <div className="rounded-xl border border-border bg-card p-4 sm:p-5">
-                  {activeTab === 'dashboard' && (
-                    <div className="max-w-md mx-auto text-center mt-10 sm:mt-16 space-y-4">
-                  <h2 className="text-xl font-semibold tracking-tight">Today Distance</h2>
+                {activeTab === 'dashboard' && (
+                  <div className="space-y-4">
+                    <PageHeader>
+                      <div>
+                        <PageHeaderTitle>Dashboard</PageHeaderTitle>
+                        <PageHeaderDescription>
+                          Today’s overview for your assigned vehicle
+                        </PageHeaderDescription>
+                      </div>
+                    </PageHeader>
 
-                  {vehicle?.vehicle_number && (
-                    <div className="text-sm text-muted-foreground">
-                      Vehicle:{' '}
-                      <span className="font-semibold text-foreground">
-                        {vehicle.vehicle_number}
-                      </span>
+                    <div className="grid gap-4 lg:grid-cols-3">
+                      <SectionCard className="lg:col-span-2">
+                        <SectionCardHeader title="Today Distance" description="Auto-refreshes every 30 seconds" />
+                        <SectionCardContent className="p-4 sm:p-6">
+                          <div className="space-y-3">
+                            {vehicle?.vehicle_number && (
+                              <div className="text-sm text-muted-foreground">
+                                Vehicle:{' '}
+                                <span className="font-semibold text-foreground">
+                                  {vehicle.vehicle_number}
+                                </span>
+                              </div>
+                            )}
+
+                            {driver?.driver_name && (
+                              <div className="text-sm text-muted-foreground">
+                                Driver:{' '}
+                                <span className="font-semibold text-foreground">
+                                  {driver.driver_name}
+                                </span>
+                              </div>
+                            )}
+
+                            {distanceLoading && (
+                              <div className="text-sm text-muted-foreground">Calculating distance…</div>
+                            )}
+
+                            {!distanceLoading && !distanceError && (
+                              <div className="text-4xl font-bold tracking-tight text-primary tabular-nums">
+                                {distance.toFixed(2)} km
+                              </div>
+                            )}
+
+                            {distanceError && (
+                              <div className="text-sm text-destructive">{distanceError}</div>
+                            )}
+
+                            <p className="text-sm text-muted-foreground">
+                              Distance covered by assigned vehicle
+                            </p>
+                          </div>
+                        </SectionCardContent>
+                      </SectionCard>
+
+                      <SectionCard>
+                        <SectionCardHeader title="Quick tips" description="Keep tracking accurate" />
+                        <SectionCardContent className="p-4 sm:p-6 space-y-2 text-sm text-muted-foreground">
+                          <div>Enable location permission when prompted.</div>
+                          <div>Keep the app open during trips for live updates.</div>
+                          <div>Switch to “Live Location” to see the map full screen.</div>
+                        </SectionCardContent>
+                      </SectionCard>
                     </div>
-                  )}
+                  </div>
+                )}
 
-                  {driver?.driver_name && (
-                    <div className="text-sm text-muted-foreground">
-                      Driver:{' '}
-                      <span className="font-semibold text-foreground">
-                        {driver.driver_name}
-                      </span>
-                    </div>
-                  )}
-
-                  {distanceLoading && (
-                    <div className="text-sm text-muted-foreground">Calculating distance…</div>
-                  )}
-
-                  {!distanceLoading && !distanceError && (
-                    <div className="text-3xl font-bold tracking-tight text-primary tabular-nums">
-                      {distance.toFixed(2)} km
-                    </div>
-                  )}
-
-                  {distanceError && (
-                    <div className="text-sm text-destructive">{distanceError}</div>
-                  )}
-
-                  <p className="text-sm text-muted-foreground">
-                    Distance covered by assigned vehicle
-                  </p>
-                    </div>
-                  )}
-
-                  {activeTab === 'settings' && (
-                    <FleetSettings
-                      onVehicleAssigned={(v) => {
-                        setVehicle(v);
-                        localStorage.setItem('assignedVehicle', JSON.stringify(v));
-                        refreshDriver();
-                      }}
-                      onLogout={onLogout}
-                    />
-                  )}
-                </div>
+                {activeTab === 'settings' && (
+                  <FleetSettings
+                    onVehicleAssigned={(v) => {
+                      setVehicle(v);
+                      localStorage.setItem('assignedVehicle', JSON.stringify(v));
+                      refreshDriver();
+                    }}
+                    onLogout={onLogout}
+                  />
+                )}
               </div>
             </div>
           )}

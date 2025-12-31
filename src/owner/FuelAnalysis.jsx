@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "../services/api.js";
+import { PageHeader, PageHeaderTitle, PageHeaderDescription } from "../components/ui/page-header.jsx";
+import { SectionCard, SectionCardHeader, SectionCardContent } from "../components/ui/section-card.jsx";
 
 export function FuelAnalysis() {
   const [rows, setRows] = useState([]);
@@ -19,12 +21,12 @@ export function FuelAnalysis() {
 
   return (
     <div className="w-full max-w-7xl space-y-6">
-      <div className="space-y-2">
-        <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground">Fuel Analysis</h1>
-        <p className="text-sm text-muted-foreground">
-          Expected vs actual mileage and variance
-        </p>
-      </div>
+      <PageHeader>
+        <div>
+          <PageHeaderTitle>Fuel Analysis</PageHeaderTitle>
+          <PageHeaderDescription>Expected vs actual mileage and variance</PageHeaderDescription>
+        </div>
+      </PageHeader>
 
       {/* ================= MOBILE: STACKED CARDS ================= */}
       <div className="space-y-3 md:hidden">
@@ -92,66 +94,73 @@ export function FuelAnalysis() {
         })}
 
         {rows.length === 0 && (
-          <div className="rounded-xl border border-border bg-card p-4 text-sm text-muted-foreground">
-            No fuel analysis records found.
-          </div>
+          <SectionCard>
+            <SectionCardContent className="p-4 text-sm text-muted-foreground">
+              No fuel analysis records found.
+            </SectionCardContent>
+          </SectionCard>
         )}
       </div>
 
       {/* ================= DESKTOP: TABLE ================= */}
-      <div className="hidden md:block rounded-xl border border-border bg-card overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead className="border-b border-border bg-muted/30">
-            <tr>
-              <th className="text-left py-3 px-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Vehicle</th>
-              <th className="text-left py-3 px-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Date</th>
-              <th className="text-left py-3 px-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Fuel</th>
-              <th className="text-left py-3 px-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Distance</th>
-              <th className="text-left py-3 px-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Expected</th>
-              <th className="text-left py-3 px-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Actual</th>
-              <th className="text-left py-3 px-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Variance</th>
-              <th className="text-left py-3 px-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((r) => {
-              const varianceNumber = Number(r.fuel_variance);
-              const varianceIsNegative = Number.isFinite(varianceNumber) && varianceNumber < 0;
-
-              return (
-                <tr key={r.analysis_id} className="border-b border-border hover:bg-muted/30">
-                  <td className="py-3 px-4 text-foreground whitespace-nowrap">{r?.vehicles?.vehicle_number || '—'}</td>
-                  <td className="py-3 px-4 text-foreground whitespace-nowrap">{r.analysis_date || '—'}</td>
-                  <td className="py-3 px-4 text-foreground tabular-nums whitespace-nowrap">{r.fuel_given ?? '—'}</td>
-                  <td className="py-3 px-4 text-foreground tabular-nums whitespace-nowrap">{r.distance_covered ?? '—'}</td>
-                  <td className="py-3 px-4 text-foreground tabular-nums whitespace-nowrap">{r.expected_mileage ?? '—'}</td>
-                  <td className="py-3 px-4 text-foreground tabular-nums whitespace-nowrap">{r.actual_mileage ?? '—'}</td>
-                  <td className={`py-3 px-4 tabular-nums whitespace-nowrap ${varianceIsNegative ? 'text-destructive' : 'text-foreground'}`}>{r.fuel_variance ?? '—'}</td>
-                  <td className="py-3 px-4 whitespace-nowrap">
-                    {r.theft_flag ? (
-                      <span className="inline-flex items-center rounded-md border border-destructive-muted bg-destructive-muted px-2 py-1 text-xs font-semibold text-destructive">
-                        Theft
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center rounded-md border border-success-muted bg-success-muted px-2 py-1 text-xs font-semibold text-success">
-                        OK
-                      </span>
-                    )}
-                  </td>
+      <SectionCard className="hidden md:block overflow-hidden">
+        <SectionCardHeader title="Fuel analysis history" description="Expected vs actual mileage and theft flag detection" />
+        <SectionCardContent className="p-0">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="border-b border-border bg-muted/30">
+                <tr>
+                  <th className="text-left py-3 px-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Vehicle</th>
+                  <th className="text-left py-3 px-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Date</th>
+                  <th className="text-left py-3 px-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Fuel</th>
+                  <th className="text-left py-3 px-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Distance</th>
+                  <th className="text-left py-3 px-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Expected</th>
+                  <th className="text-left py-3 px-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Actual</th>
+                  <th className="text-left py-3 px-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Variance</th>
+                  <th className="text-left py-3 px-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Status</th>
                 </tr>
-              );
-            })}
+              </thead>
+              <tbody>
+                {rows.map((r) => {
+                  const varianceNumber = Number(r.fuel_variance);
+                  const varianceIsNegative = Number.isFinite(varianceNumber) && varianceNumber < 0;
 
-            {rows.length === 0 && (
-              <tr>
-                <td colSpan={8} className="py-6 px-4 text-sm text-muted-foreground">
-                  No fuel analysis records found.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+                  return (
+                    <tr key={r.analysis_id} className="border-b border-border hover:bg-muted/30">
+                      <td className="py-3 px-4 text-foreground whitespace-nowrap">{r?.vehicles?.vehicle_number || '—'}</td>
+                      <td className="py-3 px-4 text-foreground whitespace-nowrap">{r.analysis_date || '—'}</td>
+                      <td className="py-3 px-4 text-foreground tabular-nums whitespace-nowrap">{r.fuel_given ?? '—'}</td>
+                      <td className="py-3 px-4 text-foreground tabular-nums whitespace-nowrap">{r.distance_covered ?? '—'}</td>
+                      <td className="py-3 px-4 text-foreground tabular-nums whitespace-nowrap">{r.expected_mileage ?? '—'}</td>
+                      <td className="py-3 px-4 text-foreground tabular-nums whitespace-nowrap">{r.actual_mileage ?? '—'}</td>
+                      <td className={`py-3 px-4 tabular-nums whitespace-nowrap ${varianceIsNegative ? 'text-destructive' : 'text-foreground'}`}>{r.fuel_variance ?? '—'}</td>
+                      <td className="py-3 px-4 whitespace-nowrap">
+                        {r.theft_flag ? (
+                          <span className="inline-flex items-center rounded-md border border-destructive-muted bg-destructive-muted px-2 py-1 text-xs font-semibold text-destructive">
+                            Theft
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center rounded-md border border-success-muted bg-success-muted px-2 py-1 text-xs font-semibold text-success">
+                            OK
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+
+                {rows.length === 0 && (
+                  <tr>
+                    <td colSpan={8} className="py-6 px-4 text-sm text-muted-foreground">
+                      No fuel analysis records found.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </SectionCardContent>
+      </SectionCard>
     </div>
   );
 }

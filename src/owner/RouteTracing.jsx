@@ -1,9 +1,12 @@
 import { getOwnerRouteHistory, getOwnerVehicles } from '../services/api.js';
 import { Play, Pause, SkipBack, SkipForward, RotateCcw, Calendar, Clock, MapPin, Activity } from 'lucide-react';
 import { Button } from '../components/ui/button.jsx';
+import { PageHeader, PageHeaderTitle, PageHeaderDescription } from '../components/ui/page-header.jsx';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select.jsx';
+import { SectionCard, SectionCardContent } from '../components/ui/section-card.jsx';
 import { Input } from '../components/ui/input.jsx';
 import { useEffect, useState, useRef } from 'react';
+import { useMapplsSdk } from '../hooks/useMapplsSdk.js';
 
 /* =========================
    ROUTE TRACING COMPONENT
@@ -29,10 +32,18 @@ export function RouteTracing() {
   const [mapError, setMapError] = useState('');
   const [routeStats, setRouteStats] = useState(null);
 
+  const { ready: mapplsReady, error: mapplsError } = useMapplsSdk({ timeoutMs: 10000 });
+
+  useEffect(() => {
+    if (mapplsError) setMapError(mapplsError);
+  }, [mapplsError]);
+
   /* =========================
      INIT MAP
   ========================= */
   useEffect(() => {
+    if (!mapplsReady) return;
+
     const initMap = () => {
       if (!window.mappls) {
         setMapError('Mappls SDK not loaded. Please refresh the page.');
@@ -62,7 +73,7 @@ export function RouteTracing() {
 
     const timer = setTimeout(initMap, 500);
     return () => clearTimeout(timer);
-  }, []);
+  }, [mapplsReady]);
 
   /* =========================
      LOAD VEHICLES
@@ -412,150 +423,156 @@ export function RouteTracing() {
   return (
     <div className="space-y-4">
       {/* HEADER */}
-      <div className="flex items-center justify-between">
+      <PageHeader>
         <div>
-          <h1 className="text-lg sm:text-xl font-semibold tracking-tight text-foreground">Route Tracing</h1>
-          <p className="text-sm text-muted-foreground">Replay vehicle movement and analyze stops</p>
+          <PageHeaderTitle>Route Tracing</PageHeaderTitle>
+          <PageHeaderDescription>Replay vehicle movement and analyze stops</PageHeaderDescription>
         </div>
-      </div>
+      </PageHeader>
 
       {/* CONTROLS */}
-      <div className="bg-card rounded-xl border border-border p-4 sm:p-5">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
-              Select Vehicle
-            </label>
-            <Select value={selectedVehicle} onValueChange={setSelectedVehicle}>
-              <SelectTrigger>
-                <SelectValue placeholder="Choose vehicle" />
-              </SelectTrigger>
-              <SelectContent>
-                {vehicles.map(vehicle => (
-                  <SelectItem key={vehicle.vehicle_id} value={vehicle.vehicle_id}>
-                    {vehicle.vehicle_number}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+      <SectionCard>
+        <SectionCardContent className="p-4 sm:p-5">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">
+                Select Vehicle
+              </label>
+              <Select value={selectedVehicle} onValueChange={setSelectedVehicle}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Choose vehicle" />
+                </SelectTrigger>
+                <SelectContent>
+                  {vehicles.map(vehicle => (
+                    <SelectItem key={vehicle.vehicle_id} value={vehicle.vehicle_id}>
+                      {vehicle.vehicle_number}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
-              Select Date
-            </label>
-            <Input
-              type="date"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-            />
-          </div>
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">
+                Select Date
+              </label>
+              <Input
+                type="date"
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+              />
+            </div>
 
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
-              Playback Speed
-            </label>
-            <Select value={speed.toString()} onValueChange={(value) => setSpeed(parseFloat(value))}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="1">1x</SelectItem>
-                <SelectItem value="2">2x</SelectItem>
-                <SelectItem value="4">4x</SelectItem>
-                <SelectItem value="5">5x</SelectItem>
-                <SelectItem value="10">10x</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">
+                Playback Speed
+              </label>
+              <Select value={speed.toString()} onValueChange={(value) => setSpeed(parseFloat(value))}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">1x</SelectItem>
+                  <SelectItem value="2">2x</SelectItem>
+                  <SelectItem value="4">4x</SelectItem>
+                  <SelectItem value="5">5x</SelectItem>
+                  <SelectItem value="10">10x</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-          <div className="flex items-end">
-            <Button
-              onClick={loadRouteData}
-              disabled={!selectedVehicle || !selectedDate || loading}
-              className="w-full"
-            >
-              {loading ? 'Loading...' : 'Load Route'}
-            </Button>
-          </div>
-        </div>
-
-        {/* PLAYBACK CONTROLS */}
-        {gpsLogs.length > 0 && (
-          <div className="flex items-center justify-center gap-4 p-4 bg-muted/30 rounded-lg">
-            <Button variant="outline" size="sm" onClick={skipToStart}>
-              <SkipBack className="h-4 w-4" />
-            </Button>
-
-            <Button variant="outline" size="sm" onClick={playPause}>
-              {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-            </Button>
-
-            <Button variant="outline" size="sm" onClick={reset}>
-              <RotateCcw className="h-4 w-4" />
-            </Button>
-
-            <Button variant="outline" size="sm" onClick={skipToEnd}>
-              <SkipForward className="h-4 w-4" />
-            </Button>
-
-            <div className="text-sm text-muted-foreground ml-4">
-              {currentIndex < gpsLogs.length ?
-                formatTime(new Date(gpsLogs[currentIndex].recorded_at)) :
-                'End of route'
-              }
+            <div className="flex items-end">
+              <Button
+                onClick={loadRouteData}
+                disabled={!selectedVehicle || !selectedDate || loading}
+                className="w-full"
+              >
+                {loading ? 'Loading...' : 'Load Route'}
+              </Button>
             </div>
           </div>
-        )}
-      </div>
+
+          {/* PLAYBACK CONTROLS */}
+          {gpsLogs.length > 0 && (
+            <div className="flex items-center justify-center gap-4 p-4 bg-muted/30 rounded-lg">
+              <Button variant="outline" size="sm" onClick={skipToStart}>
+                <SkipBack className="h-4 w-4" />
+              </Button>
+
+              <Button variant="outline" size="sm" onClick={playPause}>
+                {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+              </Button>
+
+              <Button variant="outline" size="sm" onClick={reset}>
+                <RotateCcw className="h-4 w-4" />
+              </Button>
+
+              <Button variant="outline" size="sm" onClick={skipToEnd}>
+                <SkipForward className="h-4 w-4" />
+              </Button>
+
+              <div className="text-sm text-muted-foreground ml-4">
+                {currentIndex < gpsLogs.length ?
+                  formatTime(new Date(gpsLogs[currentIndex].recorded_at)) :
+                  'End of route'
+                }
+              </div>
+            </div>
+          )}
+        </SectionCardContent>
+      </SectionCard>
 
       {/* ROUTE STATISTICS */}
       {routeStats && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-card rounded-lg border border-border p-4">
-            <div className="flex items-center gap-2">
-              <Clock className="h-5 w-5 text-blue-600" />
-              <div>
-                <p className="text-sm text-muted-foreground">Total Duration</p>
-                <p className="text-lg font-semibold text-foreground">{routeStats.totalDuration}h</p>
+        <SectionCard>
+          <SectionCardContent className="p-4 sm:p-5">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="bg-card rounded-lg border border-border p-4">
+                <div className="flex items-center gap-2">
+                  <Clock className="h-5 w-5 text-blue-600" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Total Duration</p>
+                    <p className="text-lg font-semibold text-foreground">{routeStats.totalDuration}h</p>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
 
-          <div className="bg-card rounded-lg border border-border p-4">
-            <div className="flex items-center gap-2">
-              <MapPin className="h-5 w-5 text-green-600" />
-              <div>
-                <p className="text-sm text-muted-foreground">Distance</p>
-                <p className="text-lg font-semibold text-foreground">{routeStats.totalDistance} km</p>
+              <div className="bg-card rounded-lg border border-border p-4">
+                <div className="flex items-center gap-2">
+                  <MapPin className="h-5 w-5 text-green-600" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Distance</p>
+                    <p className="text-lg font-semibold text-foreground">{routeStats.totalDistance} km</p>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
 
-          <div className="bg-card rounded-lg border border-border p-4">
-            <div className="flex items-center gap-2">
-              <Calendar className="h-5 w-5 text-purple-600" />
-              <div>
-                <p className="text-sm text-muted-foreground">Stops</p>
-                <p className="text-lg font-semibold text-foreground">{routeStats.stopsCount}</p>
+              <div className="bg-card rounded-lg border border-border p-4">
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-5 w-5 text-purple-600" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Stops</p>
+                    <p className="text-lg font-semibold text-foreground">{routeStats.stopsCount}</p>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
 
-          <div className="bg-card rounded-lg border border-border p-4">
-            <div className="flex items-center gap-2">
-              <Activity className="h-5 w-5 text-orange-600" />
-              <div>
-                <p className="text-sm text-muted-foreground">Avg Speed</p>
-                <p className="text-lg font-semibold text-foreground">{routeStats.avgSpeed} km/h</p>
+              <div className="bg-card rounded-lg border border-border p-4">
+                <div className="flex items-center gap-2">
+                  <Activity className="h-5 w-5 text-orange-600" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Avg Speed</p>
+                    <p className="text-lg font-semibold text-foreground">{routeStats.avgSpeed} km/h</p>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
+          </SectionCardContent>
+        </SectionCard>
       )}
 
       {/* MAP CONTAINER */}
-      <div className="bg-card rounded-xl border border-border overflow-hidden">
+      <SectionCard className="overflow-hidden">
         {mapError && (
           <div className="p-4 bg-destructive/10 border-b border-border">
             <p className="text-destructive text-sm">{mapError}</p>
@@ -567,38 +584,40 @@ export function RouteTracing() {
           className="w-full h-[60svh] min-h-[360px] sm:h-[65svh] lg:h-[72svh] max-h-[820px]"
           style={{ height: '65vh', minHeight: 420, maxHeight: 900 }}
         />
-      </div>
+      </SectionCard>
 
       {/* STOPS LIST */}
       {stops.length > 0 && (
-        <div className="bg-card rounded-xl border border-border p-4 sm:p-5">
-          <h3 className="text-lg font-semibold mb-4 text-foreground">Route Stops</h3>
-          <div className="space-y-3 max-h-60 overflow-y-auto">
-            {stops.map((stop, index) => (
-              <div key={index} className="flex items-center justify-between p-3 bg-destructive/10 rounded-lg border border-border">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center text-sm font-bold">
-                    {index + 1}
+        <SectionCard>
+          <SectionCardContent className="p-4 sm:p-5">
+            <h3 className="text-lg font-semibold mb-4 text-foreground">Route Stops</h3>
+            <div className="space-y-3 max-h-60 overflow-y-auto">
+              {stops.map((stop, index) => (
+                <div key={index} className="flex items-center justify-between p-3 bg-destructive/10 rounded-lg border border-border">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center text-sm font-bold">
+                      {index + 1}
+                    </div>
+                    <div>
+                      <p className="font-medium text-foreground">Stop {index + 1}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {stop.position.lat.toFixed(4)}, {stop.position.lng.toFixed(4)}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-medium text-foreground">Stop {index + 1}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {stop.position.lat.toFixed(4)}, {stop.position.lng.toFixed(4)}
+                  <div className="text-right">
+                    <p className="text-sm font-medium text-foreground">
+                      {stop.duration.toFixed(1)} min
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {stop.startTime.toLocaleTimeString()} - {stop.endTime?.toLocaleTimeString() || 'Ongoing'}
                     </p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-sm font-medium text-foreground">
-                    {stop.duration.toFixed(1)} min
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {stop.startTime.toLocaleTimeString()} - {stop.endTime?.toLocaleTimeString() || 'Ongoing'}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+              ))}
+            </div>
+          </SectionCardContent>
+        </SectionCard>
       )}
     </div>
   );

@@ -1,6 +1,9 @@
 
 import { useState } from 'react';
 import { API_BASE_URL } from '../services/apiBase';
+import { PageHeader, PageHeaderTitle, PageHeaderDescription } from '../components/ui/page-header.jsx';
+import { SectionCard, SectionCardHeader, SectionCardContent } from '../components/ui/section-card.jsx';
+import { Button } from '../components/ui/button.jsx';
 
 
 export default function FleetSettings({ onVehicleAssigned }) {
@@ -40,35 +43,43 @@ export default function FleetSettings({ onVehicleAssigned }) {
   };
 
   return (
-    <div className="max-w-sm mx-auto space-y-4">
-      <div className="space-y-1">
-        <h2 className="text-lg font-semibold">Assign Vehicle</h2>
-        <p className="text-sm text-slate-600">
-          Enter your assigned vehicle number to enable live tracking.
-        </p>
-      </div>
-
-      <input
-        className="w-full h-11 rounded-md border border-slate-300 bg-white px-3 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-        placeholder="Vehicle Number (HR55AN2175)"
-        value={vehicleNumber}
-        onChange={(e) => setVehicleNumber(e.target.value)}
-      />
-
-      {error && (
-        <div className="text-sm text-red-600" role="alert">
-          {error}
+    <div className="space-y-6">
+      <PageHeader>
+        <div>
+          <PageHeaderTitle>Settings</PageHeaderTitle>
+          <PageHeaderDescription>
+            Assign your vehicle number to enable live location updates
+          </PageHeaderDescription>
         </div>
-      )}
+      </PageHeader>
 
-      <button
-        onClick={submit}
-        disabled={loading}
-        className="w-full h-11 rounded-md bg-blue-600 text-white text-sm font-medium shadow-sm hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-        aria-busy={loading}
-      >
-        {loading ? 'Saving…' : 'Save Vehicle'}
-      </button>
+      <SectionCard className="max-w-xl">
+        <SectionCardHeader title="Assign vehicle" description="Enter the vehicle number provided by your supervisor" />
+        <SectionCardContent className="p-4 sm:p-6 space-y-4">
+          <input
+            className="w-full h-11 rounded-md border border-border bg-background px-3 text-sm text-foreground shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            placeholder="Vehicle Number (e.g. HR55AN2175)"
+            value={vehicleNumber}
+            onChange={(e) => setVehicleNumber(e.target.value)}
+          />
+
+          {error && (
+            <div className="text-sm text-destructive" role="alert">
+              {error}
+            </div>
+          )}
+
+          <Button
+            type="button"
+            onClick={submit}
+            disabled={loading || !vehicleNumber}
+            className="w-full"
+            aria-busy={loading}
+          >
+            {loading ? 'Saving…' : 'Save Vehicle'}
+          </Button>
+        </SectionCardContent>
+      </SectionCard>
     </div>
   );
 }

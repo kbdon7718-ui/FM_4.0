@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react';
 import api from '../services/api.js';
+import { PageHeader, PageHeaderTitle, PageHeaderDescription } from '../components/ui/page-header.jsx';
+import { SectionCard, SectionCardHeader, SectionCardContent } from '../components/ui/section-card.jsx';
+import { Button } from '../components/ui/button.jsx';
 
 const YEARS = Array.from(
   { length: 30 },
@@ -169,33 +172,42 @@ export default function AddVehicle({ owner }) {
   };
 
   return (
-    <div className="max-w-4xl mx-auto bg-white p-8 rounded-xl shadow">
-      <h2 className="text-2xl font-semibold mb-6">
-        Add Vehicle
-      </h2>
+    <div className="space-y-6">
+      <PageHeader>
+        <div>
+          <PageHeaderTitle>Add Vehicle</PageHeaderTitle>
+          <PageHeaderDescription>Create, edit, and manage your vehicles</PageHeaderDescription>
+        </div>
+      </PageHeader>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <SectionCard>
+        <SectionCardHeader
+          title="Vehicle details"
+          description="Add a new vehicle to your fleet. GPS fields are optional."
+        />
+        <SectionCardContent className="p-4 sm:p-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
 
         {/* BASIC */}
         <section>
-          <h3 className="text-sm font-semibold text-gray-500 mb-3">
+          <h3 className="text-sm font-semibold text-muted-foreground mb-3">
             BASIC DETAILS
           </h3>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <input
               name="vehicle_number"
               placeholder="Vehicle No (MH12AB1234)"
               value={form.vehicle_number}
               onChange={handleChange}
-              className="input"
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring"
             />
 
             <select
               name="vehicle_type"
               value={form.vehicle_type}
               onChange={handleChange}
-              className="input"
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring"
               required
             >
               <option value="">Select Vehicle Type</option>
@@ -209,7 +221,7 @@ export default function AddVehicle({ owner }) {
               placeholder="Manufacturer"
               value={form.manufacturer}
               onChange={handleChange}
-              className="input"
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring"
             />
 
             <input
@@ -217,14 +229,14 @@ export default function AddVehicle({ owner }) {
               placeholder="Model"
               value={form.model}
               onChange={handleChange}
-              className="input"
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring"
             />
 
             <select
               name="manufacturing_year"
               value={form.manufacturing_year}
               onChange={handleChange}
-              className="input"
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring"
             >
               <option value="">Manufacturing Year</option>
               {YEARS.map((y) => (
@@ -236,7 +248,7 @@ export default function AddVehicle({ owner }) {
               name="registration_state"
               value={form.registration_state}
               onChange={handleChange}
-              className="input"
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring"
             >
               <option value="">Registration State</option>
               {STATES.map((s) => (
@@ -248,16 +260,16 @@ export default function AddVehicle({ owner }) {
 
         {/* FUEL */}
         <section>
-          <h3 className="text-sm font-semibold text-gray-500 mb-3">
+          <h3 className="text-sm font-semibold text-muted-foreground mb-3">
             FUEL DETAILS
           </h3>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <select
               name="fuel_type"
               value={form.fuel_type}
               onChange={handleChange}
-              className="input"
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring"
             >
               <option value="">Fuel Type</option>
               <option value="DIESEL">Diesel</option>
@@ -272,24 +284,24 @@ export default function AddVehicle({ owner }) {
               placeholder="Tank Capacity (Liters)"
               value={form.tank_capacity}
               onChange={handleChange}
-              className="input"
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring"
             />
           </div>
         </section>
 
         {/* GPS */}
         <section>
-          <h3 className="text-sm font-semibold text-gray-500 mb-3">
+          <h3 className="text-sm font-semibold text-muted-foreground mb-3">
             GPS (OPTIONAL)
           </h3>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <input
               name="gps_provider"
               placeholder="GPS Provider"
               value={form.gps_provider}
               onChange={handleChange}
-              className="input"
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring"
             />
 
             <input
@@ -297,104 +309,115 @@ export default function AddVehicle({ owner }) {
               placeholder="GPS Device ID / IMEI"
               value={form.gps_device_id}
               onChange={handleChange}
-              className="input"
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring"
             />
           </div>
         </section>
 
         {/* ACTION */}
         <div className="flex items-center gap-4">
-          <button
-            type="submit"
-            disabled={loading}
-            className="px-6 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700"
-          >
+          <Button type="submit" disabled={loading}>
             {loading ? 'Saving...' : 'Add Vehicle'}
-          </button>
+          </Button>
 
-          {message && <span className="text-sm">{message}</span>}
+          {message && <span className="text-sm text-muted-foreground">{message}</span>}
         </div>
-      </form>
-
-      <style>{`
-        .input {
-          border: 1px solid #cbd5e1;
-          padding: 10px 12px;
-          border-radius: 8px;
-          font-size: 14px;
-        }
-        .input:focus {
-          border-color: #10b981;
-          outline: none;
-        }
-      `}</style>
+          </form>
+        </SectionCardContent>
+      </SectionCard>
 
       {/* VEHICLE LIST */}
-      <div className="mt-10">
-        <h3 className="text-lg font-semibold mb-4">Your Vehicles</h3>
-        {fetching ? (
-          <div>Loading vehicles…</div>
-        ) : vehicles.length === 0 ? (
-          <div className="text-gray-500">No vehicles found.</div>
-        ) : (
-          <table className="w-full text-sm border">
-            <thead>
-              <tr className="bg-gray-100">
-                <th className="p-2">Number</th>
-                <th>Type</th>
-                <th>Manufacturer</th>
-                <th>Model</th>
-                <th>Year</th>
-                <th>State</th>
-                <th>Fuel</th>
-                <th>Tank</th>
-                <th>GPS</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {vehicles.map((v) => (
-                <tr key={v.vehicle_id} className="border-t">
-                  {editId === v.vehicle_id ? (
-                    <>
-                      <td><input name="vehicle_number" value={editForm.vehicle_number} onChange={handleEditChange} className="input w-28" /></td>
-                      <td><input name="vehicle_type" value={editForm.vehicle_type} onChange={handleEditChange} className="input w-20" /></td>
-                      <td><input name="manufacturer" value={editForm.manufacturer} onChange={handleEditChange} className="input w-20" /></td>
-                      <td><input name="model" value={editForm.model} onChange={handleEditChange} className="input w-20" /></td>
-                      <td><input name="manufacturing_year" value={editForm.manufacturing_year} onChange={handleEditChange} className="input w-16" /></td>
-                      <td><input name="registration_state" value={editForm.registration_state} onChange={handleEditChange} className="input w-12" /></td>
-                      <td><input name="fuel_type" value={editForm.fuel_type} onChange={handleEditChange} className="input w-14" /></td>
-                      <td><input name="tank_capacity" value={editForm.tank_capacity} onChange={handleEditChange} className="input w-14" /></td>
-                      <td><input name="gps_provider" value={editForm.gps_provider} onChange={handleEditChange} className="input w-16" /></td>
-                      <td className="flex gap-2">
-                        <button onClick={handleEditSubmit} className="px-2 py-1 bg-emerald-600 text-white rounded">Save</button>
-                        <button onClick={() => setEditId(null)} className="px-2 py-1 bg-gray-300 rounded">Cancel</button>
-                      </td>
-                    </>
-                  ) : (
-                    <>
-                      <td>{v.vehicle_number}</td>
-                      <td>{v.vehicle_type}</td>
-                      <td>{v.manufacturer}</td>
-                      <td>{v.model}</td>
-                      <td>{v.manufacturing_year}</td>
-                      <td>{v.registration_state}</td>
-                      <td>{v.fuel_type}</td>
-                      <td>{v.tank_capacity}</td>
-                      <td>{v.gps_provider}</td>
-                      <td className="flex gap-2">
-                        <button onClick={() => startEdit(v)} className="px-2 py-1 bg-blue-600 text-white rounded">Edit</button>
-                        <button onClick={() => handleDelete(v.vehicle_id)} className="px-2 py-1 bg-red-600 text-white rounded">Delete</button>
-                      </td>
-                    </>
-                  )}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-        {editMessage && <div className="mt-2 text-sm">{editMessage}</div>}
-      </div>
+      <SectionCard>
+        <SectionCardHeader title="Your Vehicles" description="View, edit, or delete existing vehicles" />
+        <SectionCardContent className="p-0">
+          {fetching ? (
+            <div className="p-4 text-sm text-muted-foreground">Loading vehicles…</div>
+          ) : vehicles.length === 0 ? (
+            <div className="p-4 text-sm text-muted-foreground">No vehicles found.</div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-muted/40 text-muted-foreground">
+                    <th className="p-3 text-left font-medium">Number</th>
+                    <th className="p-3 text-left font-medium">Type</th>
+                    <th className="p-3 text-left font-medium">Manufacturer</th>
+                    <th className="p-3 text-left font-medium">Model</th>
+                    <th className="p-3 text-left font-medium">Year</th>
+                    <th className="p-3 text-left font-medium">State</th>
+                    <th className="p-3 text-left font-medium">Fuel</th>
+                    <th className="p-3 text-left font-medium">Tank</th>
+                    <th className="p-3 text-left font-medium">GPS</th>
+                    <th className="p-3 text-right font-medium">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {vehicles.map((v) => (
+                    <tr key={v.vehicle_id} className="border-t border-border">
+                      {editId === v.vehicle_id ? (
+                        <>
+                          <td className="p-3">
+                            <input name="vehicle_number" value={editForm.vehicle_number} onChange={handleEditChange} className="w-36 rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring" />
+                          </td>
+                          <td className="p-3">
+                            <input name="vehicle_type" value={editForm.vehicle_type} onChange={handleEditChange} className="w-24 rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring" />
+                          </td>
+                          <td className="p-3">
+                            <input name="manufacturer" value={editForm.manufacturer} onChange={handleEditChange} className="w-28 rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring" />
+                          </td>
+                          <td className="p-3">
+                            <input name="model" value={editForm.model} onChange={handleEditChange} className="w-28 rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring" />
+                          </td>
+                          <td className="p-3">
+                            <input name="manufacturing_year" value={editForm.manufacturing_year} onChange={handleEditChange} className="w-20 rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring" />
+                          </td>
+                          <td className="p-3">
+                            <input name="registration_state" value={editForm.registration_state} onChange={handleEditChange} className="w-16 rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring" />
+                          </td>
+                          <td className="p-3">
+                            <input name="fuel_type" value={editForm.fuel_type} onChange={handleEditChange} className="w-20 rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring" />
+                          </td>
+                          <td className="p-3">
+                            <input name="tank_capacity" value={editForm.tank_capacity} onChange={handleEditChange} className="w-20 rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring" />
+                          </td>
+                          <td className="p-3">
+                            <input name="gps_provider" value={editForm.gps_provider} onChange={handleEditChange} className="w-24 rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring" />
+                          </td>
+                          <td className="p-3">
+                            <div className="flex justify-end gap-2">
+                              <Button onClick={handleEditSubmit} disabled={editLoading} size="sm">Save</Button>
+                              <Button onClick={() => setEditId(null)} variant="outline" size="sm">Cancel</Button>
+                            </div>
+                          </td>
+                        </>
+                      ) : (
+                        <>
+                          <td className="p-3 text-foreground">{v.vehicle_number}</td>
+                          <td className="p-3 text-foreground">{v.vehicle_type}</td>
+                          <td className="p-3 text-foreground">{v.manufacturer}</td>
+                          <td className="p-3 text-foreground">{v.model}</td>
+                          <td className="p-3 text-foreground">{v.manufacturing_year}</td>
+                          <td className="p-3 text-foreground">{v.registration_state}</td>
+                          <td className="p-3 text-foreground">{v.fuel_type}</td>
+                          <td className="p-3 text-foreground">{v.tank_capacity}</td>
+                          <td className="p-3 text-foreground">{v.gps_provider}</td>
+                          <td className="p-3">
+                            <div className="flex justify-end gap-2">
+                              <Button onClick={() => startEdit(v)} variant="outline" size="sm">Edit</Button>
+                              <Button onClick={() => handleDelete(v.vehicle_id)} variant="destructive" size="sm">Delete</Button>
+                            </div>
+                          </td>
+                        </>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+          {editMessage && <div className="p-4 pt-2 text-sm text-muted-foreground">{editMessage}</div>}
+        </SectionCardContent>
+      </SectionCard>
     </div>
   );
 }

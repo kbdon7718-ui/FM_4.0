@@ -1,9 +1,20 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Fleet Management Dashboard</title>
+
+    <script>
+      (function () {
+        try {
+          var theme = localStorage.getItem('fm_theme');
+          var root = document.documentElement;
+          if (theme === 'light') root.classList.remove('dark');
+          else root.classList.add('dark');
+        } catch (e) {}
+      })();
+    </script>
 
     <!-- ✅ MAPPLS MAP SDK -->
     <script
@@ -14,11 +25,11 @@
     <script
       src="https://sdk.mappls.com/map/sdk/plugins?v=3.0&access_token=kbwesmtkrqdapkuugjskimdavcjkxkmdnhqc">
     </script>
-    <script type="module" crossorigin src="/assets/index-BU7Irtaf.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-DmFxB1-k.css">
+    <script type="module" crossorigin src="/assets/index-CMR5gH78.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-xA71-TBn.css">
   </head>
 
   <body>
-    <div id="root"></div>
+    <div id="root"></div>
   </body>
 </html>

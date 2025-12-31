@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react';
 import api from '../services/api';
+import { PageHeader, PageHeaderTitle, PageHeaderDescription } from '../components/ui/page-header.jsx';
+import { SectionCard, SectionCardHeader, SectionCardContent } from '../components/ui/section-card.jsx';
+import { Button } from '../components/ui/button.jsx';
 
 export function FuelReports() {
   const [vehicles, setVehicles] = useState([]);
@@ -51,45 +54,73 @@ export function FuelReports() {
   }
 
   return (
-    <div className="max-w-xl space-y-6">
-      <h2 className="text-xl font-semibold">Fuel Entry</h2>
+    <div className="w-full max-w-3xl space-y-6">
+      <PageHeader>
+        <div>
+          <PageHeaderTitle>Fuel Entry</PageHeaderTitle>
+          <PageHeaderDescription>Log fuel given and trigger same-day mileage analysis</PageHeaderDescription>
+        </div>
+      </PageHeader>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <select
-          value={vehicleId}
-          onChange={(e) => setVehicleId(e.target.value)}
-          required
-        >
-          <option value="">Select Vehicle</option>
-          {vehicles.map((v) => (
-            <option key={v.vehicle_id} value={v.vehicle_id}>
-              {v.vehicle_number}
-            </option>
-          ))}
-        </select>
+      <SectionCard>
+        <SectionCardHeader title="New fuel entry" description="Select a vehicle, enter fuel quantity, and save." />
+        <SectionCardContent className="p-4 sm:p-6">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              <div className="sm:col-span-3">
+                <label className="mb-2 block text-sm font-medium text-foreground">Vehicle</label>
+                <select
+                  value={vehicleId}
+                  onChange={(e) => setVehicleId(e.target.value)}
+                  required
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <option value="">Select Vehicle</option>
+                  {vehicles.map((v) => (
+                    <option key={v.vehicle_id} value={v.vehicle_id}>
+                      {v.vehicle_number}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-        <input
-          type="number"
-          step="0.01"
-          placeholder="Fuel Quantity (liters)"
-          value={fuelQty}
-          onChange={(e) => setFuelQty(e.target.value)}
-          required
-        />
+              <div>
+                <label className="mb-2 block text-sm font-medium text-foreground">Fuel quantity (L)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  placeholder="e.g. 24.5"
+                  value={fuelQty}
+                  onChange={(e) => setFuelQty(e.target.value)}
+                  required
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring"
+                />
+              </div>
 
-        <input
-          type="date"
-          value={fuelDate}
-          onChange={(e) => setFuelDate(e.target.value)}
-          required
-        />
+              <div>
+                <label className="mb-2 block text-sm font-medium text-foreground">Date</label>
+                <input
+                  type="date"
+                  value={fuelDate}
+                  onChange={(e) => setFuelDate(e.target.value)}
+                  required
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring"
+                />
+              </div>
 
-        <button disabled={loading}>
-          {loading ? 'Saving...' : 'Submit Fuel Entry'}
-        </button>
-      </form>
+              <div className="flex items-end">
+                <Button className="w-full" disabled={loading || !vehicleId}>
+                  {loading ? 'Saving...' : 'Submit Fuel Entry'}
+                </Button>
+              </div>
+            </div>
 
-      {message && <p>{message}</p>}
+            {message && (
+              <div className="text-sm text-muted-foreground">{message}</div>
+            )}
+          </form>
+        </SectionCardContent>
+      </SectionCard>
     </div>
   );
 }

@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
+import { PageHeader, PageHeaderTitle, PageHeaderDescription } from "../components/ui/page-header.jsx";
+import { SectionCard, SectionCardHeader, SectionCardContent } from "../components/ui/section-card.jsx";
+import { Button } from "../components/ui/button.jsx";
 
 export function Maintenance() {
+
   const [vehicles, setVehicles] = useState([]);
   const [vehicleId, setVehicleId] = useState("");
   const [vehicleNumber, setVehicleNumber] = useState("");
@@ -213,47 +217,45 @@ export function Maintenance() {
      UI
   ===================================== */
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
+      <PageHeader>
+        <div>
+          <PageHeaderTitle>Maintenance</PageHeaderTitle>
+          <PageHeaderDescription>
+            Record services, compliance, tyres, breakdowns and track recent entries
+          </PageHeaderDescription>
+        </div>
+      </PageHeader>
+
       {/* ALERTS BAR - FIXED AT TOP */}
       {alerts.length > 0 && (
-        <div
-          className="bg-destructive-muted border border-destructive-muted border-l-4 p-4 rounded-lg"
-          style={{ borderLeftColor: 'var(--destructive)' }}
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-semibold text-destructive">
-                🚨 Maintenance Alerts ({alerts.length})
-              </h3>
-              <div className="flex flex-wrap gap-2 mt-2">
-                {alerts.slice(0, 3).map((alert) => (
-                  <span
-                    key={alert.alert_id}
-                    className="bg-destructive-muted border border-destructive-muted text-destructive px-2 py-1 rounded text-sm"
-                  >
-                    {alert.vehicle_number}: {alert.alert_message}
-                  </span>
-                ))}
-                {alerts.length > 3 && (
-                  <span className="text-destructive text-sm">+{alerts.length - 3} more</span>
-                )}
-              </div>
+        <SectionCard>
+          <SectionCardHeader title={`Maintenance Alerts (${alerts.length})`} description="Vehicles requiring attention" />
+          <SectionCardContent className="p-4 sm:p-5">
+            <div className="flex flex-wrap gap-2">
+              {alerts.slice(0, 3).map((alert) => (
+                <span
+                  key={alert.alert_id}
+                  className="bg-destructive-muted border border-destructive-muted text-destructive px-2 py-1 rounded text-sm"
+                >
+                  {alert.vehicle_number}: {alert.alert_message}
+                </span>
+              ))}
+              {alerts.length > 3 && (
+                <span className="text-destructive text-sm">+{alerts.length - 3} more</span>
+              )}
             </div>
-          </div>
-        </div>
+          </SectionCardContent>
+        </SectionCard>
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* LEFT CARD - FORM (SCROLLABLE) */}
-        <div className="lg:col-span-2 bg-card rounded-xl border border-border overflow-hidden">
-          <div className="p-4 sm:p-6 border-b border-border bg-muted/30">
-            <h2 className="text-lg sm:text-xl font-semibold tracking-tight text-foreground">
-              🔧 Record Maintenance Entry
-            </h2>
-          </div>
-
-          <div className="p-4 sm:p-6">
+        <SectionCard className="lg:col-span-2 overflow-hidden">
+          <SectionCardHeader title="Record maintenance entry" description="Fill the required fields and save" />
+          <SectionCardContent className="p-4 sm:p-6">
             <div className="space-y-6">
+
               {/* BASIC INFO SECTION */}
               <div className="bg-muted/30 border border-border p-4 rounded-lg">
                 <h3 className="text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wide">
@@ -547,42 +549,43 @@ export function Maintenance() {
 
               {/* SUBMIT BUTTON */}
               <div className="pt-4">
-                <button
+                <Button
+                  type="button"
                   onClick={handleSubmit}
                   disabled={loading}
-                  className="w-full h-11 rounded-md bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 disabled:opacity-60 disabled:pointer-events-none"
+                  className="w-full"
                 >
                   {loading ? "Saving..." : "Save Maintenance Entry"}
-                </button>
+                </Button>
               </div>
             </div>
-          </div>
-        </div>
+          </SectionCardContent>
+        </SectionCard>
 
         {/* RIGHT CARD - RECENT ENTRIES & ALERTS */}
         <div className="space-y-4 flex flex-col">
           {/* ALERTS */}
           {alerts.length > 0 && (
-            <div className="bg-card rounded-xl border border-border p-4 flex-shrink-0">
-              <h3 className="text-base font-semibold mb-3 text-destructive">
-                🚨 Maintenance Alerts
-              </h3>
-              <div className="space-y-2 max-h-32 overflow-y-auto">
-                {alerts.map((alert) => (
-                  <div
-                    key={alert.alert_id}
-                    className="border border-destructive-muted bg-destructive-muted p-3 rounded"
-                    style={{ borderLeftWidth: 4, borderLeftColor: 'var(--destructive)' }}
-                  >
-                    <p className="font-medium text-sm text-foreground">{alert.vehicle_number}</p>
-                    <p className="text-xs text-muted-foreground">{alert.alert_message}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {new Date(alert.alert_date).toLocaleDateString()}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <SectionCard>
+              <SectionCardHeader title="Maintenance Alerts" description="Vehicles requiring attention" />
+              <SectionCardContent className="p-4 sm:p-5">
+                <div className="space-y-2 max-h-32 overflow-y-auto">
+                  {alerts.map((alert) => (
+                    <div
+                      key={alert.alert_id}
+                      className="border border-destructive-muted bg-destructive-muted p-3 rounded"
+                      style={{ borderLeftWidth: 4, borderLeftColor: 'var(--destructive)' }}
+                    >
+                      <p className="font-medium text-sm text-foreground">{alert.vehicle_number}</p>
+                      <p className="text-xs text-muted-foreground">{alert.alert_message}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(alert.alert_date).toLocaleDateString()}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </SectionCardContent>
+            </SectionCard>
           )}
 
           {/* RECENT ENTRIES */}

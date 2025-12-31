@@ -86,7 +86,7 @@ export function SupervisorLayout({ onLogout, user, theme, onThemeChange }) {
   const renderPage = () => {
     switch (currentPage) {
       case 'dashboard':
-        return <SupervisorDashboard />;
+        return <SupervisorDashboard onNavigate={handleNavClick} />;
       case 'fuel-entry':
         return <FuelEntry />;
       case 'live-tracking':

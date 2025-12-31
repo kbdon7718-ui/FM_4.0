@@ -1,4 +1,7 @@
 import { useEffect, useState } from "react";
+import { PageHeader, PageHeaderTitle, PageHeaderDescription } from "../components/ui/page-header.jsx";
+import { SectionCard, SectionCardHeader, SectionCardContent } from "../components/ui/section-card.jsx";
+import { Button } from "../components/ui/button.jsx";
 
 export function AssignDriver() {
   const [vehicles, setVehicles] = useState([]);
@@ -184,18 +187,23 @@ export function AssignDriver() {
      UI
   ===================================== */
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
+      <PageHeader>
+        <div>
+          <PageHeaderTitle>Assign Driver</PageHeaderTitle>
+          <PageHeaderDescription>
+            Assign and manage drivers for vehicles, and review assignment history
+          </PageHeaderDescription>
+        </div>
+      </PageHeader>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* LEFT CARD - ASSIGNMENT FORM */}
-        <div className="lg:col-span-2 bg-card rounded-xl border border-border overflow-hidden">
-          <div className="p-4 sm:p-6 border-b border-border bg-muted/30">
-            <h2 className="text-lg sm:text-xl font-semibold tracking-tight text-foreground">
-              Assign Driver to Vehicle
-            </h2>
-          </div>
-
-          <div className="p-4 sm:p-6">
+        <SectionCard className="lg:col-span-2 overflow-hidden">
+          <SectionCardHeader title="Assign driver to vehicle" description="Select a vehicle and enter driver details" />
+          <SectionCardContent className="p-4 sm:p-6">
             <div className="space-y-6">
+
               {/* VEHICLE SELECTION */}
               <div className="bg-muted/30 border border-border p-4 rounded-lg">
                 <h3 className="text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wide">
@@ -344,84 +352,76 @@ export function AssignDriver() {
 
               {/* SUBMIT BUTTON */}
               <div className="pt-4">
-                <button
-                  onClick={handleAssignDriver}
-                  disabled={loading}
-                  className="w-full h-11 rounded-md bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 disabled:opacity-60 disabled:pointer-events-none"
-                >
+                <Button type="button" onClick={handleAssignDriver} disabled={loading} className="w-full">
                   {loading ? "Assigning..." : "Assign Driver"}
-                </button>
+                </Button>
               </div>
             </div>
-          </div>
-        </div>
+          </SectionCardContent>
+        </SectionCard>
 
         {/* RIGHT CARD - CURRENT ASSIGNMENTS */}
-        <div className="space-y-4 overflow-hidden flex flex-col">
-          {/* CURRENT ASSIGNMENTS */}
-          <div className="bg-card rounded-xl border border-border flex-1 flex flex-col overflow-hidden">
-            <div className="p-4 border-b border-border bg-muted/30 flex-shrink-0">
-              <h3 className="text-base font-semibold text-foreground">
-                Current Driver Assignments
-              </h3>
-            </div>
-
-            <div className="flex-1 overflow-y-auto p-4" style={{ maxHeight: '65vh' }}>
-              <div className="space-y-3">
-                {currentAssignments.length === 0 ? (
-                  <div className="text-center py-8">
-                    <p className="text-muted-foreground">No current assignments</p>
-                    <p className="text-sm text-muted-foreground">Assign drivers to vehicles</p>
-                  </div>
-                ) : (
-                  currentAssignments.map((assignment) => (
-                    <div key={assignment.assignment_id} className="border border-border rounded-lg p-4 bg-card hover:bg-muted/20 transition-colors">
-                      <div className="flex justify-between items-start mb-2">
-                        <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-foreground truncate">{assignment.vehicle_number}</p>
-                          <p className="text-sm text-info font-medium truncate">
-                            {assignment.driver_name}
-                          </p>
-                        </div>
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => handleShowHistory(assignment.vehicle_id, assignment.vehicle_number)}
-                            className="text-xs bg-muted/30 hover:bg-muted/50 px-2 py-1 rounded text-foreground"
-                          >
-                            History
-                          </button>
-                          <button
-                            onClick={() => handleEndAssignment(assignment.assignment_id)}
-                            className="text-xs bg-destructive-muted hover:bg-destructive/20 px-2 py-1 rounded text-destructive"
-                          >
-                            End
-                          </button>
-                        </div>
+        <SectionCard className="overflow-hidden flex flex-col">
+          <SectionCardHeader title="Current assignments" description="End assignments or view history" />
+          <SectionCardContent className="p-4 sm:p-6 flex-1 min-h-0 overflow-y-auto" style={{ maxHeight: '65vh' }}>
+            <div className="space-y-3">
+              {currentAssignments.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground">No current assignments</p>
+                  <p className="text-sm text-muted-foreground">Assign drivers to vehicles</p>
+                </div>
+              ) : (
+                currentAssignments.map((assignment) => (
+                  <div key={assignment.assignment_id} className="border border-border rounded-lg p-4 bg-card hover:bg-muted/20 transition-colors">
+                    <div className="flex justify-between items-start mb-2">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-foreground truncate">{assignment.vehicle_number}</p>
+                        <p className="text-sm text-info font-medium truncate">
+                          {assignment.driver_name}
+                        </p>
                       </div>
-
-                      <div className="grid grid-cols-2 gap-2 text-sm">
-                        {assignment.phone_number && (
-                          <div className="text-muted-foreground">{assignment.phone_number}</div>
-                        )}
-                        {assignment.license_number && (
-                          <div className="text-muted-foreground">{assignment.license_number}</div>
-                        )}
-                        {assignment.license_valid_upto && (
-                          <div className="text-muted-foreground col-span-2">
-                            License valid till: {new Date(assignment.license_valid_upto).toLocaleDateString()}
-                          </div>
-                        )}
-                        <div className="text-muted-foreground col-span-2">
-                          Assigned: {new Date(assignment.assigned_from).toLocaleDateString()}
-                        </div>
+                      <div className="flex gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleShowHistory(assignment.vehicle_id, assignment.vehicle_number)}
+                        >
+                          History
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleEndAssignment(assignment.assignment_id)}
+                        >
+                          End
+                        </Button>
                       </div>
                     </div>
-                  ))
-                )}
-              </div>
+
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      {assignment.phone_number && (
+                        <div className="text-muted-foreground">{assignment.phone_number}</div>
+                      )}
+                      {assignment.license_number && (
+                        <div className="text-muted-foreground">{assignment.license_number}</div>
+                      )}
+                      {assignment.license_valid_upto && (
+                        <div className="text-muted-foreground col-span-2">
+                          License valid till: {new Date(assignment.license_valid_upto).toLocaleDateString()}
+                        </div>
+                      )}
+                      <div className="text-muted-foreground col-span-2">
+                        Assigned: {new Date(assignment.assigned_from).toLocaleDateString()}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
-          </div>
-        </div>
+          </SectionCardContent>
+        </SectionCard>
       </div>
 
       {/* DRIVER HISTORY MODAL */}
@@ -433,12 +433,9 @@ export function AssignDriver() {
                 <h3 className="text-lg font-semibold text-foreground">
                   Driver History - {selectedAssignment.vehicle_number}
                 </h3>
-                <button
-                  onClick={() => setShowHistory(false)}
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  ✕
-                </button>
+                <Button type="button" variant="outline" size="sm" onClick={() => setShowHistory(false)}>
+                  Close
+                </Button>
               </div>
             </div>
 

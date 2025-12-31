@@ -1,13 +1,16 @@
 import { useEffect, useRef } from 'react';
+import { useMapplsSdk } from '../../hooks/useMapplsSdk.js';
 
 export default function VehicleMap({ vehicles = [] }) {
   const mapInstance = useRef(null);
   const markersRef = useRef([]);
+  const { ready: mapplsReady } = useMapplsSdk({ timeoutMs: 10000 });
 
   /* ===============================
      INIT MAP (ONCE)
   =============================== */
   useEffect(() => {
+    if (!mapplsReady) return;
     if (!window.mappls || mapInstance.current) return;
 
     const container = document.getElementById('vehicle-map');
@@ -17,7 +20,7 @@ export default function VehicleMap({ vehicles = [] }) {
       center: [28.6139, 77.2090], // lat, lng (Delhi)
       zoom: 6,
     });
-  }, []);
+  }, [mapplsReady]);
 
   /* ===============================
      UPDATE VEHICLE MARKERS

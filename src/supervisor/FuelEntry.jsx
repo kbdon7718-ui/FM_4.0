@@ -1,4 +1,7 @@
 import { useEffect, useState } from "react";
+import { PageHeader, PageHeaderTitle, PageHeaderDescription } from "../components/ui/page-header.jsx";
+import { SectionCard, SectionCardHeader, SectionCardContent } from "../components/ui/section-card.jsx";
+import { Button } from "../components/ui/button.jsx";
 
 export function FuelEntry() {
   const [vehicles, setVehicles] = useState([]);
@@ -114,12 +117,21 @@ export function FuelEntry() {
      UI
   ===================================== */
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-      {/* LEFT CARD */}
-      <div className="bg-card rounded-xl border border-border p-4 sm:p-6">
-        <h2 className="text-lg sm:text-xl font-semibold tracking-tight text-foreground mb-5">
-          Record Fuel Entry
-        </h2>
+    <div className="space-y-6">
+      <PageHeader>
+        <div>
+          <PageHeaderTitle>Fuel Entry</PageHeaderTitle>
+          <PageHeaderDescription>
+            Record fuel given and keep recent entries in sync
+          </PageHeaderDescription>
+        </div>
+      </PageHeader>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+        {/* LEFT CARD */}
+        <SectionCard>
+          <SectionCardHeader title="Record fuel entry" description="Select vehicle, add odometer and fuel quantity" />
+          <SectionCardContent className="p-4 sm:p-6">
 
         {/* VEHICLE */}
         <label className="block text-sm font-medium text-foreground mb-1">Vehicle</label>
@@ -219,20 +231,21 @@ export function FuelEntry() {
           onChange={(e) => setDate(e.target.value)}
         />
 
-        <button
+        <Button
+          type="button"
           onClick={handleSubmit}
           disabled={loading}
-          className="w-full h-11 rounded-md bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 disabled:opacity-60 disabled:pointer-events-none"
+          className="w-full"
         >
           {loading ? "Saving..." : "Record Entry"}
-        </button>
-      </div>
+        </Button>
+          </SectionCardContent>
+        </SectionCard>
 
-      {/* RIGHT CARD */}
-      <div className="bg-card rounded-xl border border-border p-4 sm:p-6">
-        <h2 className="text-lg sm:text-xl font-semibold tracking-tight text-foreground mb-5">
-          Recent Entries
-        </h2>
+        {/* RIGHT CARD */}
+        <SectionCard>
+          <SectionCardHeader title="Recent entries" description="Latest fuel entries recorded by supervisors" />
+          <SectionCardContent className="p-4 sm:p-6">
 
         {recentEntries.map((e) => (
           <div
@@ -260,6 +273,8 @@ export function FuelEntry() {
             No recent entries.
           </div>
         )}
+          </SectionCardContent>
+        </SectionCard>
       </div>
     </div>
   );
