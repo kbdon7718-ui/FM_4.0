@@ -15,6 +15,8 @@ const STATES = [
 ];
 
 export default function AddVehicle({ owner }) {
+  const ownerId = owner?.owner_id || owner?.ownerId || owner?.id || null;
+
   const [form, setForm] = useState({
     vehicle_number: '',
     vehicle_type: '',
@@ -32,26 +34,64 @@ export default function AddVehicle({ owner }) {
   const [message, setMessage] = useState('');
   const [vehicles, setVehicles] = useState([]);
   const [fetching, setFetching] = useState(false);
+  const [millitrackDevices, setMillitrackDevices] = useState([]);
+  const [selectedMillitrackDeviceId, setSelectedMillitrackDeviceId] = useState('');
+  const [millitrackLoading, setMillitrackLoading] = useState(false);
   const [editId, setEditId] = useState(null);
   const [editForm, setEditForm] = useState({});
   const [editLoading, setEditLoading] = useState(false);
   const [editMessage, setEditMessage] = useState('');
   // Fetch vehicles
   const fetchVehicles = async () => {
+    if (!ownerId) return;
     setFetching(true);
     try {
-      const data = await api.getOwnerVehicles(owner?.owner_id);
+      const data = await api.getOwnerVehicles(ownerId);
       setVehicles(data);
     } catch (err) {
-      setMessage('❌ Failed to fetch vehicles');
+      setMessage('❌ ' + (err?.message || 'Failed to fetch vehicles'));
     } finally {
       setFetching(false);
     }
   };
 
+  const handleMillitrackSelect = (e) => {
+    const deviceId = e.target.value;
+    setSelectedMillitrackDeviceId(deviceId);
+
+    if (!deviceId) return;
+    const selected = millitrackDevices.find(d => String(d.gps_device_id) === String(deviceId));
+    if (!selected) return;
+
+    setForm((prev) => ({
+      ...prev,
+      vehicle_number: String(selected.vehicle_number || '').toUpperCase(),
+      gps_device_id: String(selected.gps_device_id || ''),
+      gps_provider: 'MILLITRACK',
+    }));
+  };
+
   useEffect(() => {
+    if (!ownerId) return;
     fetchVehicles();
-  }, []);
+  }, [ownerId]);
+
+  useEffect(() => {
+    const loadMillitrack = async () => {
+      if (!ownerId) return;
+      setMillitrackLoading(true);
+      try {
+        const devices = await api.getMillitrackDevices(ownerId);
+        setMillitrackDevices(Array.isArray(devices) ? devices : []);
+      } catch (err) {
+        setMillitrackDevices([]);
+      } finally {
+        setMillitrackLoading(false);
+      }
+    };
+
+    loadMillitrack();
+  }, [ownerId]);
 
   /* =========================
      HANDLE CHANGE (SMART)
@@ -73,10 +113,14 @@ export default function AddVehicle({ owner }) {
   // Delete vehicle
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this vehicle?')) return;
+    if (!ownerId) {
+      setEditMessage('❌ Owner not found. Please re-login.');
+      return;
+    }
     setEditLoading(true);
     setEditMessage('');
     try {
-      await api.deleteOwnerVehicle(id, owner.owner_id);
+      await api.deleteOwnerVehicle(id, ownerId);
       setEditMessage('✅ Vehicle deleted');
       fetchVehicles();
     } catch (err) {
@@ -102,10 +146,14 @@ export default function AddVehicle({ owner }) {
   // Submit edit
   const handleEditSubmit = async (e) => {
     e.preventDefault();
+    if (!ownerId) {
+      setEditMessage('❌ Owner not found. Please re-login.');
+      return;
+    }
     setEditLoading(true);
     setEditMessage('');
     try {
-      await api.updateOwnerVehicle(editId, editForm, owner.owner_id);
+      await api.updateOwnerVehicle(editId, editForm, ownerId);
       setEditMessage('✅ Vehicle updated');
       setEditId(null);
       fetchVehicles();
@@ -127,7 +175,7 @@ export default function AddVehicle({ owner }) {
       return;
     }
 
-    if (!owner?.owner_id) {
+    if (!ownerId) {
       setMessage('❌ Owner not found. Please re-login.');
       setLoading(false);
       return;
@@ -136,7 +184,7 @@ export default function AddVehicle({ owner }) {
     try {
       const payload = {
         ...form,
-        owner_id: owner.owner_id, // 🔥 REQUIRED
+        owner_id: ownerId, // 🔥 REQUIRED
         manufacturing_year: form.manufacturing_year
           ? Number(form.manufacturing_year)
           : null,
@@ -145,7 +193,7 @@ export default function AddVehicle({ owner }) {
           : null,
       };
 
-      const data = await api.createVehicle(payload, owner.owner_id);
+      const data = await api.createVehicle(payload, ownerId);
       if (!data?.success) {
         throw new Error(data?.error || 'Failed to add vehicle');
       }
@@ -195,6 +243,20 @@ export default function AddVehicle({ owner }) {
           </h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <select
+              value={selectedMillitrackDeviceId}
+              onChange={handleMillitrackSelect}
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring"
+              disabled={millitrackLoading || !owner?.owner_id}
+            >
+              <option value="">Select Vehicle No (from Millitrack)</option>
+              {millitrackDevices.map((d) => (
+                <option key={d.gps_device_id} value={d.gps_device_id}>
+                  {d.vehicle_number}
+                </option>
+              ))}
+            </select>
+
             <input
               name="vehicle_number"
               placeholder="Vehicle No (MH12AB1234)"

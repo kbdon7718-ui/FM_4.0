@@ -69,9 +69,17 @@ apiClient.interceptors.response.use(
       removeStoredUser();
       window.location.href = '/login';
     }
-    return Promise.reject(
-      error.response?.data || error.message
-    );
+    const data = error.response?.data;
+    const message =
+      data?.message ||
+      data?.error ||
+      (typeof data === 'string' ? data : null) ||
+      error.message ||
+      'Request failed';
+    const normalized = new Error(message);
+    normalized.status = error.response?.status;
+    normalized.data = data;
+    return Promise.reject(normalized);
   }
 );
 
@@ -160,6 +168,16 @@ export const deleteOwnerVehicle = async (vehicleId, ownerId) => {
     },
   });
   return data;
+};
+
+export const getMillitrackDevices = async (ownerId) => {
+  const { data } = await apiClient.get('/integrations/millitrack/devices', {
+    headers: {
+      'x-role': 'OWNER',
+      'x-owner-id': ownerId,
+    },
+  });
+  return data?.data || [];
 };
 
 /* ================================
@@ -295,6 +313,7 @@ const api = {
   createVehicle,
   updateOwnerVehicle,
   deleteOwnerVehicle,
+  getMillitrackDevices,
   getLatestTelemetry,
 
    getOwnerDashboard,

@@ -50,6 +50,7 @@ useEffect(() => {
     if (mapInstance.current) return;
 
     mapInstance.current = new window.mappls.Map('live-tracking-map', {
+      center: { lat: 20.5937, lng: 78.9629 },
       zoom: 5,
     });
 
@@ -152,15 +153,17 @@ useEffect(() => {
       let hasValidVehicles = false;
 
       filteredVehicles.forEach((v) => {
-        console.log('Processing vehicle:', v.id, v.number, 'lat:', v.lat, 'lng:', v.lng, 'status:', v.status);
-        if (!v.lat || !v.lng) {
-          console.warn('Vehicle missing coordinates:', v.id, v.number);
+        const lat = Number(v.lat);
+        const lng = Number(v.lng);
+        console.log('Processing vehicle:', v.id, v.number, 'lat:', lat, 'lng:', lng, 'status:', v.status);
+        if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+          console.warn('Vehicle missing/invalid coordinates:', v.id, v.number);
           return;
         }
 
         hasValidVehicles = true;
-        bounds.push([v.lat, v.lng]); // Mappls may expect [lng, lat] for bounds
-        console.log('Added to bounds:', [v.lat, v.lng]);
+        bounds.push([lng, lat]);
+        console.log('Added to bounds:', [lng, lat]);
 
         const color =
           v.status === 'moving'
@@ -173,7 +176,7 @@ useEffect(() => {
           // Create marker with default styling first
           const marker = new window.mappls.Marker({
   map: mapInstance.current,
-  position: { lat: v.lat, lng: v.lng },
+  position: { lat, lng },
   html: `
     <div style="
       width:18px;
@@ -214,38 +217,28 @@ useEffect(() => {
       });
 
       // Fit bounds to show all vehicles
-      if (hasValidVehicles && bounds.length > 0) {
+      if (hasValidVehicles && bounds.length > 0 && autoCenterRef.current) {
         try {
           console.log('Fitting bounds for', bounds.length, 'vehicles, bounds:', bounds);
           if (bounds.length === 1) {
             // Single vehicle - zoom in closer
-            mapInstance.current.setCenter([bounds[0][1], bounds[0][0]], 14); // [lat, lng]
+            mapInstance.current.setCenter({ lat: bounds[0][1], lng: bounds[0][0] });
+            mapInstance.current.setZoom(14);
           } else {
             // Multiple vehicles - fit bounds
-            const minLng = Math.min(...bounds.map(b => b[0]));
-            const maxLng = Math.max(...bounds.map(b => b[0]));
-            const minLat = Math.min(...bounds.map(b => b[1]));
-            const maxLat = Math.max(...bounds.map(b => b[1]));
-
-            // Add some padding
-            const latPadding = (maxLat - minLat) * 0.1;
-            const lngPadding = (maxLng - minLng) * 0.1;
-
-            const boundsArray = [
-              [minLng - lngPadding, minLat - latPadding],
-              [maxLng + lngPadding, maxLat + latPadding]
-            ];
-
-            console.log('Calculated bounds array:', boundsArray);
-
-            // Try to fit bounds if the method exists
-            if (typeof mapInstance.current.fitBounds === 'function') {
-              mapInstance.current.fitBounds(boundsArray);
-              console.log('Called fitBounds with:', boundsArray);
+            if (window.mappls && typeof window.mappls.fitBounds === 'function') {
+              new window.mappls.fitBounds({
+                map: mapInstance.current,
+                cType: 0,
+                bounds,
+                options: { padding: 120, duration: 1000 },
+              });
+              console.log('Called mappls.fitBounds with:', bounds);
             } else {
               // Fallback to center on the first vehicle
-              mapInstance.current.setCenter([bounds[0][1], bounds[0][0]], 10);
-              console.log('Fallback: set center to:', [bounds[0][1], bounds[0][0]]);
+              mapInstance.current.setCenter({ lat: bounds[0][1], lng: bounds[0][0] });
+              mapInstance.current.setZoom(10);
+              console.log('Fallback: set center to:', { lat: bounds[0][1], lng: bounds[0][0] });
             }
           }
         } catch (boundsError) {
@@ -307,12 +300,18 @@ useEffect(() => {
      FOCUS SELECTED VEHICLE
   ========================= */
   useEffect(() => {
-    if (selectedVehicle?.lat && selectedVehicle?.lng && mapInstance.current && mapInitialized.current) {
-      try {
-      //  mapInstance.current.setCenter([selectedVehicle.lat, selectedVehicle.lng], 14);
-      } catch (error) {
-        console.error('Error focusing on vehicle:', error);
-      }
+    if (!mapInstance.current || !mapInitialized.current) return;
+
+    const lat = Number(selectedVehicle?.lat);
+    const lng = Number(selectedVehicle?.lng);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+
+    try {
+      autoCenterRef.current = false;
+      mapInstance.current.setCenter({ lat, lng });
+      mapInstance.current.setZoom(14);
+    } catch (error) {
+      console.error('Error focusing on vehicle:', error);
     }
   }, [selectedVehicle]);
 

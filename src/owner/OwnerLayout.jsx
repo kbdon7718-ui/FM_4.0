@@ -104,13 +104,13 @@ export function OwnerLayout({ onLogout, user, theme, onThemeChange }) {
         //return <Penalties />;
       case 'settings':
         return <Settings />;
-        
-       case 'addvehicle':
-  return <AddVehicle owner={user} />;
+
+      case 'addvehicle':
+        return <AddVehicle owner={user} />;
 
       case 'dashboard':
       default:
-        return < AddVehicle/>;
+        return <OwnerDashboard />;
     }
   };
 

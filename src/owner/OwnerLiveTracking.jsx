@@ -50,11 +50,12 @@ export function OwnerLiveTracking() {
 
       try {
         mapInstance.current = new window.mappls.Map('owner-live-tracking-map', {
-          center: [20.5937, 78.9629], // Center of India
+          center: { lat: 20.5937, lng: 78.9629 }, // Center of India
           zoom: 5,
         });
         mapInitialized.current = true;
         setMapError('');
+
         setTimeout(() => {
           try {
             mapInstance.current?.resize?.();
@@ -129,14 +130,16 @@ export function OwnerLiveTracking() {
       let hasValidVehicles = false;
 
       filteredVehicles.forEach((v) => {
-        console.log('Owner processing vehicle:', v.id, v.number, 'lat:', v.lat, 'lng:', v.lng, 'status:', v.status);
-        if (!v.lat || !v.lng) {
-          console.warn('Owner vehicle missing coordinates:', v.id, v.number);
+        const lat = Number(v.lat);
+        const lng = Number(v.lng);
+        console.log('Owner processing vehicle:', v.id, v.number, 'lat:', lat, 'lng:', lng, 'status:', v.status);
+        if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+          console.warn('Owner vehicle missing/invalid coordinates:', v.id, v.number);
           return;
         }
 
         hasValidVehicles = true;
-        bounds.push([v.lat, v.lng]);
+        bounds.push([lng, lat]);
 
         const color =
           v.status === 'moving'
@@ -148,7 +151,7 @@ export function OwnerLiveTracking() {
         try {
           const marker = new window.mappls.Marker({
             map: mapInstance.current,
-            position: { lat: v.lat, lng: v.lng },
+            position: { lat, lng },
           });
 
           const popupContent = `
@@ -157,7 +160,7 @@ export function OwnerLiveTracking() {
               <span style="color: ${color};">●</span> Status: ${v.status}<br/>
               Speed: ${v.speed} km/h<br/>
               Today: ${v.today_km} km<br/>
-              Total: ${v.total_km} km<br/>
+              Total: ${Number(v.total_km || 0)} km<br/>
               <small style="color: #67727E;">${new Date(v.lastUpdated).toLocaleString()}</small>
             </div>
           `;
@@ -181,25 +184,19 @@ export function OwnerLiveTracking() {
       if (hasValidVehicles && bounds.length > 0) {
         try {
           if (bounds.length === 1) {
-            mapInstance.current.setCenter(bounds[0], 14);
+            mapInstance.current.setCenter({ lat: bounds[0][1], lng: bounds[0][0] });
+            mapInstance.current.setZoom(14);
           } else {
-            const minLat = Math.min(...bounds.map(b => b[0]));
-            const maxLat = Math.max(...bounds.map(b => b[0]));
-            const minLng = Math.min(...bounds.map(b => b[1]));
-            const maxLng = Math.max(...bounds.map(b => b[1]));
-
-            const latPadding = (maxLat - minLat) * 0.1;
-            const lngPadding = (maxLng - minLng) * 0.1;
-
-            const boundsArray = [
-              [minLat - latPadding, minLng - lngPadding],
-              [maxLat + latPadding, maxLng + lngPadding]
-            ];
-
-            if (typeof mapInstance.current.fitBounds === 'function') {
-              mapInstance.current.fitBounds(boundsArray);
+            if (window.mappls && typeof window.mappls.fitBounds === 'function') {
+              new window.mappls.fitBounds({
+                map: mapInstance.current,
+                cType: 0,
+                bounds,
+                options: { padding: 120, duration: 1000 },
+              });
             } else {
-              mapInstance.current.setCenter(bounds[0], 10);
+              mapInstance.current.setCenter({ lat: bounds[0][1], lng: bounds[0][0] });
+              mapInstance.current.setZoom(10);
             }
           }
         } catch (boundsError) {
@@ -255,6 +252,21 @@ export function OwnerLiveTracking() {
       setShowPopup(true);
     }
   };
+
+  useEffect(() => {
+    if (!mapInstance.current || !mapInitialized.current) return;
+
+    const lat = Number(selectedVehicle?.lat);
+    const lng = Number(selectedVehicle?.lng);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+
+    try {
+      mapInstance.current.setCenter({ lat, lng });
+      mapInstance.current.setZoom(14);
+    } catch (error) {
+      console.error('Error focusing on vehicle:', error);
+    }
+  }, [selectedVehicle]);
 
   /* =========================
      TOGGLE AUTO REFRESH
